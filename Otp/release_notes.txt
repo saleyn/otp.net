@@ -1,0 +1,64 @@
+Release notes
+-------------
+
+V 0.5, January 2009 / Serge Aleynikov
+-------------------------------------
+- More robust error handling
+- Added delegates for connection state changes
+- Support for pid monitors
+- Support for short node names
+- Optional disabling of local epmd registration and 
+  inhibiting creation of connection acceptor
+- Support for local processing of io_request's 
+- RPC API extended to supply the pid of a local io server mailbox.
+- Support for IEEE 754 double encoding/decoding 
+- Support for big-num decoding.
+- Otp.Erlang.Tuple and Otp.Erlang.List now take variable number
+  of parameters
+- Argument lists of OtpNode and OtpConnection constructors changed 
+  (some of these changes are not fully backward-compatible).
+
+V 0.3, September 2006 / Paul Shaffer
+------------------------------------
+Some fixes and VS projects have been contributed by Paul, mainly to support R11B.
+
+1. modified abstractnode.cs, abstractconnection.cs to support extended ports and sids.
+
+2. Fixed lack of double parsing in double.cs. Code much simpler than the java version.
+
+3. moved erlang password to app.config file.  This is easier for .net programmers,
+but I left the old code in place, commented out.
+
+
+
+
+V 0.2, May 2004 / Vlad Dumitrescu
+---------------------------------
+
+This is a direct conversion from the Java code of jinterface-1.2.1.1
+(from R9C-0). It should therefore be pretty stable and deserve a version number
+closer to 1, but I'd like first to have it tested by more people.
+
+I used a CloneObject class written by Amir Harel
+(http://www.codeproject.com/csharp/cloneimpl_class.asp). There's no copyright notice
+accompanying the code, so I contacted the author (no answer yet).
+
+I've been using Borland's C#Builder. There are some VisualStudio files, but they
+aren't current. I'll try to fix them when I get to work (where I have MS tools).
+
+Known issues:
+- OtpSelf.accept() won't work, because of some issues with member visibility in
+System.Net.Sockets.TcpClient. The workaround is to always initiate connections
+from the C# node. [*]
+- If running the test program several times in a row, sometimes it succeeds to
+connect, sometimes it doesn't. I haven't figured out if it's a real problem or a
+timeout in the Erlang node (not allowing connections to be made too often).
+- tracing level can now only be set in the code, because I don't know what would
+be the replacement for .properties files in C#.
+- I am not sure about the thread synchronization stuff in GenericQueue. It really
+hits me to rediscover how gory it can be to do concurrency in anything else than
+Erlang!
+
+Have fun!
+/Vlad
+
