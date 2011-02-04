@@ -283,12 +283,11 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not an atom.
 		**/
-		public virtual System.String read_atom()
+		public virtual string read_atom()
 		{
 			int tag;
 			int len;
 			byte[] strbuf;
-			System.String atom;
 			
 			tag = this.read1();
 			if (tag == OtpExternal.versionTag)
@@ -305,17 +304,8 @@ namespace Otp
 			
 			strbuf = new byte[len];
 			this.readN(strbuf);
-			char[] tmpChar;
-			tmpChar = new char[strbuf.Length];
-			strbuf.CopyTo(tmpChar, 0);
-			atom = new System.String(tmpChar);
-			
-			if (atom.Length > OtpExternal.maxAtomLength)
-			{
-				atom = atom.Substring(0, (OtpExternal.maxAtomLength) - (0));
-			}
-			
-			return atom;
+            int n = strbuf.Length > OtpExternal.maxAtomLength ? OtpExternal.maxAtomLength : strbuf.Length;
+            return System.Text.Encoding.ASCII.GetString(strbuf, 0, n);
 		}
 		
 		/*
@@ -975,7 +965,13 @@ namespace Otp
 					return new Erlang.Long(this);
 
 				case OtpExternal.atomTag:
-					return new Erlang.Atom(this);
+                    string s = read_atom();
+                    if (s == "true")
+                        return new Erlang.Boolean(true);
+                    else if (s == "false")
+                        return new Erlang.Boolean(false);
+                    else
+					    return new Erlang.Atom(s);
 
 				case OtpExternal.floatTag:
                 case OtpExternal.newFloatTag:
