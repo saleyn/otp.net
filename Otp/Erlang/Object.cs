@@ -115,5 +115,7 @@ namespace Otp.Erlang
         public Pid      pidValue()      { return this.Cast<Pid>().pidValue(); }
         public Port     portValue()     { return this.Cast<Port>().portValue(); }
         public Ref      refValue()      { return this.Cast<Ref>().refValue(); }
+        public Tuple    tupleValue()    { return this.Cast<Tuple>().tupleValue(); }
+        public List     listValue()     { return this.Cast<List>().listValue(); }
 	}
 }
