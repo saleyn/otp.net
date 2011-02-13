@@ -5,18 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtpTest1.2008", "OtpTest1.2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Otp.2008", "..\Otp\Otp.2008.csproj", "{8155F56B-4925-406C-8619-7D0E57DD7FE1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B511BD13-227C-4BA6-96AE-AFA83C5C244B}"
-	ProjectSection(SolutionItems) = preProject
-		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
-		OtpTest1.2008.vsmdi = OtpTest1.2008.vsmdi
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtpTest", "..\UnitTest\OtpTest.csproj", "{E031FCAE-9E50-4AD9-8838-9DD015B9319C}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = OtpTest1.2008.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

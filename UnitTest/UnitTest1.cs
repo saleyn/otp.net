@@ -173,9 +173,9 @@ namespace Otp
                 Erlang.VarBind binding = new Otp.Erlang.VarBind();
                 Assert.IsTrue(pattern.match(obj, binding));
                 Assert.AreEqual(3, binding.Count);
-                Assert.AreEqual(10, binding["A"].Cast<Erlang.Long>().longValue());
-                Assert.AreEqual("a", binding["B"].Cast<Erlang.Atom>().atomValue());
-                Assert.AreEqual("[1,2,3]", binding["C"].Cast<Erlang.List>().ToString());
+                Assert.AreEqual(10, binding["A"].longValue());
+                Assert.AreEqual("a", binding["B"].atomValue());
+                Assert.AreEqual("[1,2,3]", binding["C"].ToString());
             }
         }
     }
