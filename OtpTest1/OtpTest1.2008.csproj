@@ -38,13 +38,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Test1.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Otp\Otp.csproj">
+    <ProjectReference Include="..\Otp\Otp.2008.csproj">
       <Project>{8155F56B-4925-406C-8619-7D0E57DD7FE1}</Project>
-      <Name>Otp</Name>
+      <Name>Otp.2008</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

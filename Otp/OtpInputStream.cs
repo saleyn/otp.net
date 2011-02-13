@@ -93,7 +93,7 @@ namespace Otp
 			}
 			catch (System.IO.IOException)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 		}
 		
@@ -120,7 +120,7 @@ namespace Otp
 			}
 			catch (System.Exception)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 		}
 		
@@ -139,7 +139,7 @@ namespace Otp
 			
 			if (i < 0)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 			
 			return i;
@@ -162,7 +162,7 @@ namespace Otp
 			}
 			catch (System.IO.IOException)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 			return ((((int) b[0] << 8) & 0xff00) + (((int) b[1]) & 0xff));
 		}
@@ -184,7 +184,7 @@ namespace Otp
 			}
 			catch (System.IO.IOException)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 			return (int)((((int) b[0] << 24) & 0xff000000) + (((int) b[1] << 16) & 0xff0000) + (((int) b[2] << 8) & 0xff00) + (((int) b[3]) & 0xff));
 		}
@@ -206,7 +206,7 @@ namespace Otp
             }
             catch (System.IO.IOException)
             {
-                throw new Erlang.DecodeException("Cannot read from input stream");
+                throw new Erlang.Exception("Cannot read from input stream");
             }
             System.UInt64 i1 = (System.UInt64)((((int)b[0] << 24) & 0xff000000) + (((int)b[1] << 16) & 0xff0000) + (((int)b[2] << 8) & 0xff00) + (((int)b[3]) & 0xff));
             System.UInt64 i2 = (i1 << 32) & 0xffffffff00000000
@@ -232,7 +232,7 @@ namespace Otp
 			}
 			catch (System.IO.IOException)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 			return ((((int) b[1] << 8) & 0xff00) + (((int) b[0]) & 0xff));
 		}
@@ -255,7 +255,7 @@ namespace Otp
 			}
 			catch (System.IO.IOException)
 			{
-				throw new Erlang.DecodeException("Cannot read from input stream");
+				throw new Erlang.Exception("Cannot read from input stream");
 			}
 			return (int)((((int) b[3] << 24) & 0xff000000) + (((int) b[2] << 16) & 0xff0000) + (((int) b[1] << 8) & 0xff00) + (((int) b[0]) & 0xff));
 		}
@@ -297,7 +297,7 @@ namespace Otp
 			
 			if (tag != OtpExternal.atomTag)
 			{
-				throw new Erlang.DecodeException("wrong tag encountered, expected " + OtpExternal.atomTag + ", got " + tag);
+				throw new Erlang.Exception("wrong tag encountered, expected " + OtpExternal.atomTag + ", got " + tag);
 			}
 			
 			len = this.read2BE();
@@ -330,7 +330,7 @@ namespace Otp
 			
 			if (tag != OtpExternal.binTag)
 			{
-				throw new Erlang.DecodeException("Wrong tag encountered, expected " + OtpExternal.binTag + ", got " + tag);
+				throw new Erlang.Exception("Wrong tag encountered, expected " + OtpExternal.binTag + ", got " + tag);
 			}
 			
 			len = this.read4BE();
@@ -354,7 +354,7 @@ namespace Otp
             double d = this.read_double();
             float f = (float)d;
             if (System.Math.Abs(d - f) >= 1.0E-20)
-                throw new Erlang.DecodeException("Value cannot be represented as float: " + d);
+                throw new Erlang.Exception("Value cannot be represented as float: " + d);
             return f;
         }
 
@@ -404,7 +404,7 @@ namespace Otp
                 }
                 catch
                 {
-                    throw new Erlang.DecodeException("Error parsing float format: '" + str + "'");
+                    throw new Erlang.Exception("Error parsing float format: '" + str + "'");
                 }
             }
             else if (tag == OtpExternal.newFloatTag)
@@ -420,7 +420,7 @@ namespace Otp
             }
             else
             {
-                throw new Erlang.DecodeException("Wrong tag encountered, expected " + OtpExternal.floatTag + ", got " + tag);
+                throw new Erlang.Exception("Wrong tag encountered, expected " + OtpExternal.floatTag + ", got " + tag);
             }
         }
 		
@@ -439,7 +439,7 @@ namespace Otp
 			
 			if (l != i)
 			{
-				throw new Erlang.DecodeException("Value too large for byte: " + l);
+				throw new Erlang.Exception("Value too large for byte: " + l);
 			}
 			
 			return i;
@@ -460,7 +460,7 @@ namespace Otp
 			
 			if (l != i)
 			{
-				throw new Erlang.DecodeException("Value too large for byte: " + l);
+				throw new Erlang.Exception("Value too large for byte: " + l);
 			}
 			
 			return i;
@@ -481,11 +481,11 @@ namespace Otp
 			
 			if (l != i)
 			{
-				throw new Erlang.DecodeException("Value too large for integer: " + l);
+				throw new Erlang.Exception("Value too large for integer: " + l);
 			}
 			else if (l < 0)
 			{
-				throw new Erlang.DecodeException("Value not unsigned: " + l);
+				throw new Erlang.Exception("Value not unsigned: " + l);
 			}
 			
 			return i;
@@ -506,7 +506,7 @@ namespace Otp
 			
 			if (l != i)
 			{
-				throw new Erlang.DecodeException("Value too large for byte: " + l);
+				throw new Erlang.Exception("Value too large for byte: " + l);
 			}
 			
 			return i;
@@ -527,11 +527,11 @@ namespace Otp
 			
 			if (l != i)
 			{
-				throw new Erlang.DecodeException("Value too large for byte: " + l);
+				throw new Erlang.Exception("Value too large for byte: " + l);
 			}
 			else if (l < 0)
 			{
-				throw new Erlang.DecodeException("Value not unsigned: " + l);
+				throw new Erlang.Exception("Value not unsigned: " + l);
 			}
 			
 			return i;
@@ -552,7 +552,7 @@ namespace Otp
 			
 			if (l != i)
 			{
-				throw new Erlang.DecodeException("Value too large for byte: " + l);
+				throw new Erlang.Exception("Value too large for byte: " + l);
 			}
 			
 			return i;
@@ -572,7 +572,7 @@ namespace Otp
 			
 			if (l < 0)
 			{
-				throw new Erlang.DecodeException("Value not unsigned: " + l);
+				throw new Erlang.Exception("Value not unsigned: " + l);
 			}
 			
 			return l;
@@ -620,10 +620,10 @@ namespace Otp
                     byte[] nb = new byte[arity];
                     if (arity != this.readN(nb))
                     {
-                        throw new Erlang.DecodeException("Cannot read from input stream. Expected smallBigTag arity " + arity);
+                        throw new Erlang.Exception("Cannot read from input stream. Expected smallBigTag arity " + arity);
                     }
                     if (arity > 8)
-                        throw new Erlang.DecodeException("Value too large for long type (arity=" + arity + ")");
+                        throw new Erlang.Exception("Value too large for long type (arity=" + arity + ")");
 
                     val = 0;
                     for (int i = 0; i < arity; i++)
@@ -638,7 +638,7 @@ namespace Otp
 				
 				
 				case OtpExternal.largeBigTag: default: 
-					throw new Erlang.DecodeException("Not valid integer tag: " + tag);
+					throw new Erlang.Exception("Not valid integer tag: " + tag);
 				
 			}
 			
@@ -684,7 +684,7 @@ namespace Otp
 				
 				
 				default: 
-					throw new Erlang.DecodeException("Not valid list tag: " + tag);
+					throw new Erlang.Exception("Not valid list tag: " + tag);
 				
 			}
 			
@@ -725,7 +725,7 @@ namespace Otp
 				
 				
 				default: 
-					throw new Erlang.DecodeException("Not valid tuple tag: " + tag);
+					throw new Erlang.Exception("Not valid tuple tag: " + tag);
 				
 			}
 			
@@ -759,7 +759,7 @@ namespace Otp
 				
 				
 				default: 
-					throw new Erlang.DecodeException("Not valid nil tag: " + tag);
+					throw new Erlang.Exception("Not valid nil tag: " + tag);
 				
 			}
 			
@@ -790,7 +790,7 @@ namespace Otp
 			
 			if (tag != OtpExternal.pidTag)
 			{
-				throw new Erlang.DecodeException("Wrong tag encountered, expected " + OtpExternal.pidTag + ", got " + tag);
+				throw new Erlang.Exception("Wrong tag encountered, expected " + OtpExternal.pidTag + ", got " + tag);
 			}
 			
 			node = this.read_atom();
@@ -824,7 +824,7 @@ namespace Otp
 			
 			if (tag != OtpExternal.portTag)
 			{
-				throw new Erlang.DecodeException("Wrong tag encountered, expected " + OtpExternal.portTag + ", got " + tag);
+				throw new Erlang.Exception("Wrong tag encountered, expected " + OtpExternal.portTag + ", got " + tag);
 			}
 			
 			node = this.read_atom();
@@ -881,7 +881,7 @@ namespace Otp
 				
 				
 				default: 
-					throw new Erlang.DecodeException("Wrong tag encountered, expected ref, got " + tag);
+					throw new Erlang.Exception("Wrong tag encountered, expected ref, got " + tag);
 				
 			}
 		}
@@ -934,7 +934,7 @@ namespace Otp
 					return new System.String(charbuf);
 
 				default:
-					throw new Erlang.DecodeException("Wrong tag encountered, expected " + OtpExternal.stringTag + " or " + OtpExternal.listTag + ", got " + tag);
+					throw new Erlang.Exception("Wrong tag encountered, expected " + OtpExternal.stringTag + " or " + OtpExternal.listTag + ", got " + tag);
 				
 			}
 		}
@@ -999,7 +999,7 @@ namespace Otp
 					return new Erlang.Binary(this);
 
 				case OtpExternal.largeBigTag: default:
-					throw new Erlang.DecodeException("Uknown data type: " + tag);
+					throw new Erlang.Exception("Uknown data type: " + tag);
 				
 			}
 		}
