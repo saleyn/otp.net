@@ -1,7 +1,0 @@
-D:\lib\otp.net\OtpTest1\OtpTest\obj\Debug\ResolveAssemblyReference.cache
-D:\lib\otp.net\OtpTest1\OtpTest\bin\Debug\OtpTest.dll
-D:\lib\otp.net\OtpTest1\OtpTest\bin\Debug\OtpTest.pdb
-D:\lib\otp.net\OtpTest1\OtpTest\bin\Debug\Otp.dll
-D:\lib\otp.net\OtpTest1\OtpTest\bin\Debug\Otp.pdb
-D:\lib\otp.net\OtpTest1\OtpTest\obj\Debug\OtpTest.dll
-D:\lib\otp.net\OtpTest1\OtpTest\obj\Debug\OtpTest.pdb
