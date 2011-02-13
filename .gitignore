@@ -9,4 +9,5 @@ UnitTest/bin
 UnitTest/obj
 UpgradeLog.XML
 *.testrunconfig
+*.*.suo
 *.suo
