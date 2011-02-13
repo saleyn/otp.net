@@ -26,6 +26,20 @@ namespace Otp.Erlang
 	[Serializable]
     public abstract class Object : Amir_Harel.Cloning.BaseObject
 	{
+        public static Erlang.Object Format(
+            string fmt, params object[] args)
+        {
+            int pos = 0, argc = 0;
+            return Formatter.create(fmt.ToCharArray(), ref pos, ref argc, args);
+        }
+
+        public T Cast<T>() where T: Erlang.Object
+        {
+            if (!(this is T))
+                throw new CastException();
+            return (T)(this);
+        }
+
 		/*
 		* Convert the object according to the rules of the Erlang external
 		* format. This is mainly used for sending Erlang terms in messages,
@@ -56,6 +70,16 @@ namespace Otp.Erlang
 			return buf.read_any();
 		}
 		
+        public virtual bool subst(ref Erlang.Object term, Erlang.VarBind binding)
+        {
+            return false;
+        }
+
+        public virtual bool match(Erlang.Object pattern, Erlang.VarBind binding)
+        {
+            return (pattern is Erlang.Var) ? pattern.match(this, binding) : this.Equals(pattern);
+        }
+
 		/*
 		* Determine if two Erlang objects are equal. In general, Erlang
 		* objects are equal if the components they consist of are equal.
