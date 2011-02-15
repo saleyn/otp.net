@@ -81,14 +81,14 @@ namespace Otp
 
                 try
                 {
-                    defaultCookie = ConfigurationManager.AppSettings["ErlangCookie"];
+                    defaultCookie = ConfigurationManager.AppSettings["ErlangCookie"] ?? string.Empty;
                 }
                 catch
                 {
-                    defaultCookie = null;
+                    defaultCookie = string.Empty;
                 }
 
-                if (defaultCookie == null)
+                if (defaultCookie == string.Empty)
                 {
                     System.String dotCookieFilename = CookieFileName();
                     System.IO.StreamReader br = null;
@@ -100,7 +100,7 @@ namespace Otp
                     }
                     catch (System.IO.IOException)
                     {
-                        defaultCookie = null;
+                        defaultCookie = string.Empty;
                     }
                     finally
                     {
@@ -114,9 +114,6 @@ namespace Otp
                         }
                     }
                 }
-
-                if (defaultCookie == null)
-                    defaultCookie = string.Empty;
             }
         }
         internal static System.String localHost = null;
@@ -125,7 +122,7 @@ namespace Otp
         internal System.String _alive;
         internal System.String _cookie;
         internal System.String _longName;
-        public static string   defaultCookie = null;
+        public static string   defaultCookie = string.Empty;
         public static bool     useShortNames = false;
 
         // Node types
