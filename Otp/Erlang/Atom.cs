@@ -78,7 +78,7 @@ namespace Otp.Erlang
 		* 
 		* @see #toString
 		**/
-		public virtual System.String atomValue()
+		public override System.String atomValue()
 		{
 			return atom;
 		}

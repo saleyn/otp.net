@@ -57,7 +57,7 @@ namespace Otp.Erlang
         * 
         * @see #toString
         **/
-        public virtual System.String stringValue()
+        public override System.String stringValue()
         {
             return str;
         }

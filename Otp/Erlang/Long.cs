@@ -63,7 +63,7 @@ namespace Otp.Erlang
 		*
 		* @return the value of this number, as a long.
 		**/
-		public virtual long longValue()
+		public override long longValue()
 		{
 			return val;
 		}
@@ -76,7 +76,7 @@ namespace Otp.Erlang
 		* @exception RangeException if the value is too large to
 		* be represented as an int.
 		**/
-		public virtual int intValue()
+		public override int intValue()
 		{
 			int i = (int) val;
 			
@@ -120,7 +120,7 @@ namespace Otp.Erlang
 		* @exception RangeException if the value is too large to
 		* be represented as a short.
 		**/
-		public virtual short shortValue()
+		public override short shortValue()
 		{
 			short i = (short) val;
 			
@@ -164,7 +164,7 @@ namespace Otp.Erlang
 		* @exception RangeException if the value is too large to
 		* be represented as a char.
 		**/
-		public virtual char charValue()
+		public override char charValue()
 		{
 			char i = (char) val;
 			

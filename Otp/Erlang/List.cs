@@ -116,6 +116,7 @@ namespace Otp.Erlang
                     else if (o is uint) this.elems[i] = new UInt((int)o);
                     else if (o is short) this.elems[i] = new Short((short)o);
                     else if (o is ushort) this.elems[i] = new UShort((short)o);
+                    else if (o is bool) this.elems[i] = new Boolean((bool)o);
                     else
                         throw new System.ArgumentException("Unknown type of element[" + i + "]: " + o.GetType().ToString());
                 }

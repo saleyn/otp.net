@@ -79,6 +79,18 @@ namespace Otp
                 Assert.AreEqual("Abc", (obj1 as Erlang.Atom).atomValue());
             }
             {
+                Erlang.Object obj1 = Erlang.Object.Format("{'true', 'false', true, false}");
+                Assert.IsInstanceOfType(obj1, typeof(Erlang.Tuple));
+                Erlang.Tuple t = obj1.Cast<Erlang.Tuple>();
+                Assert.AreEqual(4, t.arity());
+                foreach (Erlang.Object term in t.elements())
+                    Assert.IsInstanceOfType(term, typeof(Erlang.Boolean));
+                Assert.AreEqual(true, t[0].boolValue());
+                Assert.AreEqual(false,t[1].boolValue());
+                Assert.AreEqual(true, t[2].boolValue());
+                Assert.AreEqual(false,t[3].boolValue());
+            }
+            {
                 Erlang.Object obj1 = Erlang.Object.Format("\"Abc\"");
                 Assert.IsInstanceOfType(obj1, typeof(Erlang.String));
                 Assert.AreEqual("Abc", (obj1 as Erlang.String).stringValue());
@@ -167,15 +179,84 @@ namespace Otp
         public void TestPatternMatch()
         {
             {
-                Erlang.Object pattern = Erlang.Object.Format("{test, A, B, C}");
+                Erlang.Object pat = Erlang.Object.Format("{test, A, B, C}");
                 Erlang.Object obj = Erlang.Object.Format("{test, 10, a, [1,2,3]}");
 
                 Erlang.VarBind binding = new Otp.Erlang.VarBind();
-                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.IsTrue(pat.match(obj, binding));
                 Assert.AreEqual(3, binding.Count);
                 Assert.AreEqual(10, binding["A"].longValue());
                 Assert.AreEqual("a", binding["B"].atomValue());
                 Assert.AreEqual("[1,2,3]", binding["C"].ToString());
+            }
+
+            Erlang.Object pattern = Erlang.Object.Format("{test, T}");
+            string exp = "{test, ~w}";
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Object obj = Erlang.Object.Format(exp, (int)3);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(3, binding.find("T").intValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Object obj = Erlang.Object.Format(exp, (long)100);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(100, binding.find("T").longValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Object obj = Erlang.Object.Format(exp, 100.0);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(100.0, binding.find("T").doubleValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Object obj = Erlang.Object.Format(exp, "test");
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual("test", binding.find("T").stringValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Object obj = Erlang.Object.Format(exp, true);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(true, binding.find("T").boolValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Object obj = Erlang.Object.Format(exp, 'c');
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual('c', binding.find("T").charValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Pid pid = new Erlang.Pid("tmp", 1, 2, 3);
+                Erlang.Object obj = Erlang.Object.Format(exp, pid as Erlang.Object);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(pid, binding.find("T").pidValue());
+
+                obj = Erlang.Object.Format(exp, pid);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(pid, binding.find("T").pidValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.Ref reference = new Erlang.Ref("tmp", 1, 2);
+                Erlang.Object obj = Erlang.Object.Format(exp, reference);
+                Assert.IsTrue(pattern.match(obj, binding));
+                Assert.AreEqual(reference, binding.find("T").refValue());
+            }
+            {
+                Erlang.VarBind binding = new Otp.Erlang.VarBind();
+                Erlang.List obj = new Erlang.List(new Erlang.Int(10), new Erlang.Double(30.0),
+                    new Erlang.String("abc"), new Erlang.Atom("a"),
+                    new Erlang.Binary(new byte[]{1,2,3}), false, new Erlang.Boolean(true));
+                Erlang.Object pat = Erlang.Object.Format("T");
+                Assert.IsTrue(pat.match(obj, binding));
+                Erlang.Object expected = Erlang.Object.Format("[10, 30.0, \"abc\", 'a', ~w, \'false\', true]",
+                    new Erlang.Binary(new byte[] { 1, 2, 3 }));
+                Erlang.Object result = binding.find("T");
+                Assert.IsTrue(expected.Equals(result));
             }
         }
     }

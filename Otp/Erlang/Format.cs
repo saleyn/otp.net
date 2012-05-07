@@ -52,6 +52,14 @@ namespace Otp.Erlang
             return new string(fmt, start, len);
         }
 
+        private static Object createAtom(string s)
+        {
+            bool is_true = s == "true";
+            if (is_true || s == "false")
+                return new Erlang.Boolean(is_true);
+            return new Erlang.Atom(s);
+        }
+
         private static string patom(char[] fmt, ref int pos)
         {
             int start = pos;
@@ -98,7 +106,7 @@ namespace Otp.Erlang
             {
                 char c = fmt[pos];
                 if (c == '"') {
-                    if (fmt[pos-1] == '\\')
+                    if (fmt[pos - 1] == '\\')
                         continue;
                     else
                         break;
@@ -123,7 +131,7 @@ namespace Otp.Erlang
                         break;
                 }
             }
-            int len = pos - start;
+            int len = pos++ - start;
             return new string(fmt, start, len);
         }
 
@@ -205,6 +213,7 @@ namespace Otp.Erlang
             object o = args[argc++];
             Type to = o.GetType();
 
+            // Native types
             if (to == typeof(int))
                 items.Add(new Erlang.Long((int)o));
             else if (to == typeof(long))
@@ -215,13 +224,24 @@ namespace Otp.Erlang
                 items.Add(new Erlang.String((string)o));
             else if (to == typeof(bool))
                 items.Add(new Erlang.Boolean((bool)o));
-            else if (to == typeof(Erlang.Object))
-                items.Add(o as Erlang.Object);
             else if (to == typeof(char))
                 items.Add(new Erlang.Char((char)o));
+            // Erlang terms
+            else if (to == typeof(Erlang.Object))
+                items.Add(o as Erlang.Object);
+            /*
+            else if (to == typeof(Erlang.Pid))
+                items.Add(o as Erlang.Pid);
+            else if (to == typeof(Erlang.Atom))
+                items.Add(o as Erlang.Atom);
+            else if (to = typeof(Erlang.Binary))
+                items.Add(o as Erlang.Binary)
+            */
+            else if (o is Erlang.Object)
+                items.Add(o as Erlang.Object);
             else
                 throw new FormatException(
-                    string.Format("Unknown type of argument #{0}: {1}", argc-1, to.ToString()));
+                    string.Format("Unknown type of argument #{0}: {1}", argc - 1, to.ToString()));
             return State.ERL_OK;
         }
 
@@ -269,7 +289,7 @@ namespace Otp.Erlang
                     char c = fmt[pos];
                     if (char.IsLower(c)) {         /* atom  ? */
                         string s = patom(fmt, ref pos);
-                        result = new Erlang.Atom(s);
+                        result = createAtom(s);
                     } else if (char.IsUpper(c) || c == '_') {
                         string s = pvariable(fmt, ref pos);
                         result = new Erlang.Var(s);
@@ -284,7 +304,7 @@ namespace Otp.Erlang
                         result = new Erlang.String(s);
                     } else if (c == '\'') {     /* quoted atom ? */
                         string s = pquotedAtom(fmt, ref pos);
-                        result = new Erlang.Atom(s);
+                        result = createAtom(s);
                     }
                     break;
             }

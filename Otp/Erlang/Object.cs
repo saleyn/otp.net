@@ -103,19 +103,19 @@ namespace Otp.Erlang
 			}
 		}
 
-        public long     longValue()     { return this.Cast<Long>().longValue(); }
-        public int      intValue()      { return this.Cast<Long>().intValue(); }
-        public short    shortValue()    { return this.Cast<Long>().shortValue(); }
-        public double   doubleValue()   { return this.Cast<Double>().doubleValue(); }
-        public string   atomValue()     { return this.Cast<Atom>().atomValue(); }
-        public string   stringValue()   { return this.Cast<String>().stringValue(); }
-        public char     charValue()     { return this.Cast<Char>().charValue(); }
-        public bool     boolValue()     { return this.Cast<Boolean>().booleanValue(); }
-        public byte[]   binaryValue()   { return this.Cast<Binary>().binaryValue(); }
-        public Pid      pidValue()      { return this.Cast<Pid>().pidValue(); }
-        public Port     portValue()     { return this.Cast<Port>().portValue(); }
-        public Ref      refValue()      { return this.Cast<Ref>().refValue(); }
-        public Tuple    tupleValue()    { return this.Cast<Tuple>().tupleValue(); }
-        public List     listValue()     { return this.Cast<List>().listValue(); }
+        public virtual long     longValue()     { return this.Cast<Long>().longValue(); }
+        public virtual int      intValue()      { return this.Cast<Long>().intValue(); }
+        public virtual short    shortValue()    { return this.Cast<Long>().shortValue(); }
+        public virtual double   doubleValue()   { return this.Cast<Double>().doubleValue(); }
+        public virtual string   atomValue()     { return this.Cast<Atom>().atomValue(); }
+        public virtual string   stringValue()   { return this.Cast<String>().stringValue(); }
+        public virtual char     charValue()     { return this.Cast<Char>().charValue(); }
+        public virtual bool     boolValue()     { return this.Cast<Boolean>().booleanValue(); }
+        public virtual byte[]   binaryValue()   { return this.Cast<Binary>().binaryValue(); }
+        public Pid              pidValue()      { return this.Cast<Pid>(); }
+        public Port             portValue()     { return this.Cast<Port>(); }
+        public Ref              refValue()      { return this.Cast<Ref>(); }
+        public Tuple            tupleValue()    { return this.Cast<Tuple>(); }
+        public List             listValue()     { return this.Cast<List>(); }
 	}
 }

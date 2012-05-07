@@ -41,7 +41,7 @@ namespace Otp.Erlang
             m_dict[name] = obj;
         }
 
-        public Erlang.Object find(string name) 
+        public Erlang.Object find(string name)
         {
             Erlang.Object obj;
             return m_dict.TryGetValue(name, out obj) ? obj : null;

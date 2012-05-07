@@ -42,9 +42,9 @@
     <Compile Include="UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Otp\Otp.2008.csproj">
-      <Project>{8155F56B-4925-406C-8619-7D0E57DD7FE1}</Project>
-      <Name>Otp.2008</Name>
+    <ProjectReference Include="..\Otp\Otp.csproj">
+      <Project>{9A16CEEB-FC26-4D35-8F9E-42DA30212F69}</Project>
+      <Name>Otp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

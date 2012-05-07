@@ -112,7 +112,7 @@ namespace Otp.Erlang
 		* 
 		* @return the byte array containing the bytes for this binary.
 		**/
-		public virtual byte[] binaryValue()
+		public override byte[] binaryValue()
 		{
 			return bin;
 		}

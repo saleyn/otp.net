@@ -59,7 +59,7 @@ namespace Otp.Erlang
 		*
 		* @return the value of this object, as a double.
 		**/
-		public virtual double doubleValue()
+		public override double doubleValue()
 		{
 			return d;
 		}
