@@ -11,3 +11,4 @@ UpgradeLog.XML
 *.testrunconfig
 *.*.suo
 *.suo
+/Otp/Otp.csproj.user
