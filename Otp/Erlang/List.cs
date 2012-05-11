@@ -203,7 +203,7 @@ namespace Otp.Erlang
 
         public int Length
         {
-            get { return this.elems.Length; }
+            get { return this.arity(); }
         }
 
 		/*
@@ -305,17 +305,18 @@ namespace Otp.Erlang
                 new System.Collections.Generic.List<Erlang.Object>();
             bool changed = false;
 
-            foreach (Erlang.Object term in this.elems)
-            {
-                Erlang.Object obj = null;
-                if (term.subst(ref obj, binding))
-                    result.Add(obj);
-                else
+            if (this.elems != null)
+                foreach (Erlang.Object term in this.elems)
                 {
-                    changed = true;
-                    result.Add(term);
+                    Erlang.Object obj = null;
+                    if (term.subst(ref obj, binding))
+                        result.Add(obj);
+                    else
+                    {
+                        changed = true;
+                        result.Add(term);
+                    }
                 }
-            }
 
             if (!changed)
                 return false;

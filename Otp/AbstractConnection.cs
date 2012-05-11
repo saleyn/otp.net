@@ -981,11 +981,6 @@ receive_loop_brk: ;
                     header.writeTo((System.IO.Stream) socket.GetStream());
                     payload.writeTo((System.IO.Stream) socket.GetStream());
                 }
-                catch (System.IO.IOException e)
-                {
-                    close();
-                    throw e;
-                }
                 catch (System.Exception e)
                 {
                     close();
@@ -1014,11 +1009,6 @@ receive_loop_brk: ;
                         }
                     }
                     header.writeTo((System.IO.Stream) socket.GetStream());
-                }
-                catch (System.IO.IOException e)
-                {
-                    close();
-                    throw e;
                 }
                 catch (System.Exception e)
                 {

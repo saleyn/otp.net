@@ -263,6 +263,7 @@ namespace Otp.Erlang
                 case '[':
                     if (fmt[pos] == ']') {
                         result = new Erlang.List();
+                        pos++;
                         break;
                     }
                     else if (State.ERL_OK == plist(fmt, ref pos, ref items, ref argc, args))
@@ -285,8 +286,7 @@ namespace Otp.Erlang
                     break;
 
                 default:
-                    --pos;
-                    char c = fmt[pos];
+                    char c = fmt[--pos];
                     if (char.IsLower(c)) {         /* atom  ? */
                         string s = patom(fmt, ref pos);
                         result = createAtom(s);
