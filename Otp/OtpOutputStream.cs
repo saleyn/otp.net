@@ -156,7 +156,12 @@ namespace Otp
 			os.Write(buf, 0, _count);
 			os.Flush();
 		}
-		
+
+        public void writeTo(System.Net.Sockets.Socket sock)
+        {
+            sock.Send(buf, _count, System.Net.Sockets.SocketFlags.None);
+        }
+
 		/*
 		* Write the low byte of a value to the stream.
 		*
