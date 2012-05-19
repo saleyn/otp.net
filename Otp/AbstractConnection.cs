@@ -58,7 +58,11 @@ namespace Otp
         protected internal const int headerLen = 2048; // more than enough
         
         protected internal static readonly byte passThrough = 0x70;
-        protected internal static readonly byte version = 0x83;
+        
+        /// <summary>
+        /// Erlang protocol version byte
+        /// </summary>
+        public static readonly byte version = 0x83;
         
         // MD5 challenge messsage tags
         protected internal const int ChallengeReply = 'r';
