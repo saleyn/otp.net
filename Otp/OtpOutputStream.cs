@@ -57,15 +57,22 @@ namespace Otp
 		}
 		
 		/*
-		* Create a stream containing the encoded version of the given
-		* Erlang term.
+		* Create a stream containing the serialized Erlang term.
 		**/
-		public OtpOutputStream(Erlang.Object o):this()
-		{
-			this.write_any(o);
-		}
-		
-		// package scope
+		public OtpOutputStream(Erlang.Object o):this(o, false) {}
+
+        /*
+        * Create a stream containing the serialized Erlang term.
+        * Optionally include in the beginning Erlang protocol version byte.
+        **/
+        public OtpOutputStream(Erlang.Object o, bool writeVersion) : this()
+        {
+            if (writeVersion)
+                this.write(AbstractConnection.version);
+            this.write_any(o);
+        }
+
+        // package scope
 		/*
 		* Get the contents of the output stream as an input stream instead.
 		* This is used internally in {@link OtpCconnection} for tracing
