@@ -4,12 +4,14 @@ namespace Otp
 {
     public class OtpTrace
     {
-        public enum Type 
+        public enum Type
         {
-              defaultLevel  = 0
-            , sendThreshold = 1
-            , ctrlThreshold = 2
-            , handshakeThreshold = 3
+            defaultLevel = 0
+          ,
+            sendThreshold = 1
+                ,
+            ctrlThreshold = 2
+                , handshakeThreshold = 3
         }
 
         public static Type traceLevel = Type.defaultLevel;
@@ -23,7 +25,7 @@ namespace Otp
 
         private static TraceDelegate onTraceEvent = DefaultTraceHandler;
 
-        public void registerTraceHandler(TraceDelegate handler)
+        public static void RegisterTraceHandler(TraceDelegate handler)
         {
             onTraceEvent = handler;
         }
@@ -31,19 +33,13 @@ namespace Otp
         public static void TraceEvent(string text)
         {
             if (onTraceEvent != null)
-                lock (onTraceEvent)
-                {
-                    onTraceEvent(text);
-                }
+                onTraceEvent(text);
         }
 
         public static void TraceEvent(string format, params object[] args)
-		{
+        {
             if (onTraceEvent != null)
-                lock (onTraceEvent)
-                {
-                    onTraceEvent(string.Format(format, args));
-                }
-		}
-	}
+                onTraceEvent(string.Format(format, args));
+        }
+    }
 }
