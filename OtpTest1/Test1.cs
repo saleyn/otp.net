@@ -9,11 +9,6 @@ namespace Otp
     {
 		static public void Main(String[] args)
         {
-            {
-                Erlang.Object obj1 = Erlang.Object.Format("{a, b, 10, 2.0}");
-                Erlang.Object obj2 = Erlang.Object.Format("{a, [b, 1, 2.0, \"abc\"], {1, 2}}");
-            }
-
             System.Console.Out.WriteLine("Otp test...");
 
             string cookie = OtpNode.defaultCookie;

@@ -17,6 +17,7 @@
 */
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Otp
 {
@@ -1164,26 +1165,27 @@ receive_loop_brk: ;
             {
                 socket = new System.Net.Sockets.TcpClient();
                 socket.NoDelay = true;
-                {
-                    IAsyncResult ar = socket.BeginConnect(peer.host(), port, null, null);
-                    System.Threading.WaitHandle wh = ar.AsyncWaitHandle;
-                    try
-                    {
-                        if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(_connectTimeout), false))
-                        {
-                            close();
-                            throw new TimeoutException("Timedout waiting for connection to " + peer.host() + ":" + port);
-                        }
+                var connected = false;
+                Thread thr = new Thread(
+                    () => {
+                        socket.Connect(peer.host(), port);
+                        connected = true;
+                    }
+                ) { IsBackground = true, Name = "OtpSockConnectThread" };
 
-                        socket.EndConnect(ar);
-                    }
-                    finally
-                    {
-                        wh.Close();
-                    }
-                }
+                thr.Start();
 
                 Debug.WriteLine("-> MD5 CONNECT TO " + peer.host() + ": " + port);
+
+                var untilTime = DateTime.Now.AddMilliseconds(_connectTimeout);
+
+                while (!connected && DateTime.Now < untilTime)
+                    Thread.Sleep(10);
+
+                if (!connected) // Timeout
+                {
+                    throw new OtpTimeoutException("Timeout waiting for connect to " + peer.host() + ':' + port);
+                }
 
                 if (traceLevel >= OtpTrace.Type.handshakeThreshold)
                     OtpTrace.TraceEvent("-> MD5 CONNECT TO " + peer.host() + ":" + port);

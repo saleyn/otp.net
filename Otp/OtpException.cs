@@ -37,4 +37,23 @@ namespace Otp
 		{
 		}
 	}
+
+    public class OtpTimeoutException : OtpException
+    {
+        /*
+        * Provides no message.
+        **/
+        public OtpTimeoutException()
+            : base()
+        {
+        }
+
+        /*
+        * Provides a detailed message.
+        **/
+        public OtpTimeoutException(System.String msg)
+            : base(msg)
+        {
+        }
+    }
 }
