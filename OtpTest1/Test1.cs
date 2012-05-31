@@ -51,21 +51,20 @@ namespace Otp
             System.Console.Out.WriteLine("This node is called {0} and is using cookie='{1}'.",
                 node.node(), node.cookie());
 
-            bool ok = node.ping(remote, 1000);
+            OtpCookedConnection.ConnectTimeout = 2000;
+            OtpCookedConnection conn = node.connection(remote);
 
-            if (!ok)
+            if (conn == null)
             {
                 Console.WriteLine("Can't connect to node " + remote);
                 return;
             }
 
-            // If using short names, get the short name of the peer.
-            remote = node.connection(remote).peer.node();
+            // If using short names or IP address as the host part of the node name,
+            // get the short name of the peer.
+            remote = conn.peer.node();
 
-            if (remote != null)
-                System.Console.Out.WriteLine("   successfully pinged node " + remote + "\n");
-            else
-                System.Console.Out.WriteLine("   could not ping node " + remote + "\n");
+            System.Console.Out.WriteLine("   successfully connected to node " + remote + "\n");
 
             OtpMbox mbox = null;
 

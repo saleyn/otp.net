@@ -99,6 +99,14 @@ namespace Otp
         **/
         public static OtpTrace.Type traceLevel = OtpTrace.traceLevel;
 
+        private static int _connectTimeout = 5000;
+
+        public static int ConnectTimeout
+        {
+            get { return _connectTimeout; }
+            set { _connectTimeout = value; }
+        }
+
         protected internal static System.Random random = null;
 
         /*
@@ -174,7 +182,7 @@ namespace Otp
             this.peer = other;
             this.self = self;
             this.socket = null;
-            this.auth_cookie = cookie;
+            this.auth_cookie = cookie ?? self._cookie;
             
             //this.IsBackground = true;
             
@@ -1154,11 +1162,29 @@ receive_loop_brk: ;
         {
             try
             {
-                socket = new System.Net.Sockets.TcpClient(peer.host(), port);
+                socket = new System.Net.Sockets.TcpClient();
                 socket.NoDelay = true;
-                
+                {
+                    IAsyncResult ar = socket.BeginConnect(peer.host(), port, null, null);
+                    System.Threading.WaitHandle wh = ar.AsyncWaitHandle;
+                    try
+                    {
+                        if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(_connectTimeout), false))
+                        {
+                            close();
+                            throw new TimeoutException("Timedout waiting for connection to " + peer.host() + ":" + port);
+                        }
+
+                        socket.EndConnect(ar);
+                    }
+                    finally
+                    {
+                        wh.Close();
+                    }
+                }
+
                 Debug.WriteLine("-> MD5 CONNECT TO " + peer.host() + ": " + port);
-                
+
                 if (traceLevel >= OtpTrace.Type.handshakeThreshold)
                     OtpTrace.TraceEvent("-> MD5 CONNECT TO " + peer.host() + ":" + port);
                 sendName(peer.distChoose, self.flags);
