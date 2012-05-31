@@ -43,25 +43,30 @@ namespace Otp
 		public OtpPeer(System.String node):base(node)
 		{
 		}
+
+        public OtpPeer(System.String node, bool shortNames)
+            : base(node, defaultCookie, shortNames)
+        {
+        }
+        
+        /*
+        * Create a connection to a remote node.
+        *
+        * @param self the local node from which you wish to connect.
+        *
+        * @return a connection to the remote node.
+        *
+        * @exception java.net.UnknownHostException if the remote host could
+        * not be found.
 		
-		/*
-		* Create a connection to a remote node.
-		*
-		* @param self the local node from which you wish to connect.
-		*
-		* @return a connection to the remote node.
-		*
-		* @exception java.net.UnknownHostException if the remote host could
-		* not be found.
+        * @exception java.io.IOException if it was not possible to connect
+        * to the remote node.
 		
-		* @exception java.io.IOException if it was not possible to connect
-		* to the remote node.
-		
-		* @exception OtpAuthException if the connection was refused by the
-		* remote node.
-		*
-		@deprecated Use the corresponding method in {@link OtpSelf} instead.
-		**/
+        * @exception OtpAuthException if the connection was refused by the
+        * remote node.
+        *
+        @deprecated Use the corresponding method in {@link OtpSelf} instead.
+        **/
 		public virtual OtpConnection connect(OtpSelf self)
 		{
 			return new OtpConnection(self, this);

@@ -503,7 +503,7 @@ namespace Otp
 				if (conn == null)
 				{
 					// in case node had no '@' add localhost info and try again
-					peer = new OtpPeer(node);
+                    peer = new OtpPeer(node, _useShortName);
 					conn = (OtpCookedConnection) connections[peer.node()];
 					
 					if (conn == null)

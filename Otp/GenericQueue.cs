@@ -158,7 +158,7 @@ namespace Otp
 
 					currentTime = SupportClass.currentTimeMillis();
 					if (stopTime <= currentTime)
-						throw new System.Threading.ThreadInterruptedException("Get operation timed out");
+						return null;  // Timeout
 					
 					try
 					{

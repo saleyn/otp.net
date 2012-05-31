@@ -122,6 +122,7 @@ namespace Otp
         internal System.String _alive;
         internal System.String _cookie;
         internal System.String _longName;
+        internal bool          _useShortName;
         public static string   defaultCookie = string.Empty;
         public static bool     useShortNames = false;
 
@@ -190,17 +191,26 @@ namespace Otp
             }
 
             _longName = _alive + "@" + _host;
-            _node = node(_longName, shortName);
+            _useShortName = shortName || useShortNames;
+            _node = node(_longName, _useShortName);
         }
 
         public static string node(System.String _node, bool _shortName)
         {
-            if (_shortName || useShortNames)
+            if (_shortName)
             {
                 int i = _node.IndexOf('@');
                 i = i < 0 ? 0 : i + 1;
-                int j = _node.IndexOf((System.Char)'.', i);
-                return (j < 0) ? _node : _node.Substring(0, i + j - 2);
+                try
+                {
+                    System.Net.IPAddress.Parse(_node.Substring(i));
+                    return _node;
+                }
+                catch (System.Exception)
+                {
+                    int j = _node.IndexOf((System.Char)'.', i);
+                    return (j < 0) ? _node : _node.Substring(0, i + j - 2);
+                }
             }
             else
             {
@@ -215,7 +225,7 @@ namespace Otp
         **/
         public string node()
         {
-            return useShortNames ? _node : _longName;
+            return _useShortName ? _node : _longName;
         }
 
         public string nodeLongName()

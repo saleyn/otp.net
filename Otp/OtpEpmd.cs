@@ -275,82 +275,88 @@ namespace Otp
 		{
 			int port = 0;
 			System.Net.Sockets.TcpClient s = null;
-			
-			try
-			{
-				OtpOutputStream obuf = new OtpOutputStream();
-				s = new System.Net.Sockets.TcpClient(node.host(), epmdPort);
-				
-				// build and send epmd request
-				// length[2], tag[1], alivename[n] (length = n+1)
-				obuf.write2BE(node.getAlive().Length + 1);
-				obuf.write1(port4req);
-				//UPGRADE_NOTE: This code will be optimized in the future;
-				byte[] tmpBytes;
-				int i;
-				string tmpStr;
-				tmpStr = node.getAlive();
-				tmpBytes = new byte[tmpStr.Length];
-				i = 0;
-				while (i < tmpStr.Length)
-				{
-					tmpBytes[i] = (byte) tmpStr[i];
-					i++;
-				}
-				obuf.writeN(tmpBytes);
-				
-				// send request
-				obuf.writeTo((System.IO.Stream) s.GetStream());
-				
-				if (traceLevel >= traceThreshold)
-					OtpTrace.TraceEvent("-> LOOKUP (r4) " + node);
-				
-				// receive and decode reply
-				// resptag[1], result[1], port[2], ntype[1], proto[1],
-				// disthigh[2], distlow[2], nlen[2], alivename[n],
-				// elen[2], edata[m]
-				byte[] tmpbuf = new byte[100];
 
-				int n = s.GetStream().Read(tmpbuf, 0, 100);
-				
-				if (n < 0)
-				{
-					// this was an r3 node => not a failure (yet)
-					if (s != null)
-						s.Close();
-					throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
-				}
-				
-				OtpInputStream ibuf = new OtpInputStream(tmpbuf);
-				
-				int response = ibuf.read1();
-				if (response == port4resp)
-				{
-					int result = ibuf.read1();
-					if (result == 0)
-					{
-						port = ibuf.read2BE();
-						
-						node.ntype = ibuf.read1();
-						node._proto = ibuf.read1();
-						node._distHigh = ibuf.read2BE();
-						node._distLow = ibuf.read2BE();
-						// ignore rest of fields
-					}
-				}
-			}
-			catch (System.IO.IOException)
-			{
-				if (traceLevel >= traceThreshold)
-					OtpTrace.TraceEvent("<- (no response)");
-				throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
-			}
-			catch (Erlang.Exception)
-			{
-				if (traceLevel >= traceThreshold)
-					OtpTrace.TraceEvent("<- (invalid response)");
-				throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
-			}
+            try
+            {
+                OtpOutputStream obuf = new OtpOutputStream();
+                s = new System.Net.Sockets.TcpClient(node.host(), epmdPort);
+
+                // build and send epmd request
+                // length[2], tag[1], alivename[n] (length = n+1)
+                obuf.write2BE(node.getAlive().Length + 1);
+                obuf.write1(port4req);
+                //UPGRADE_NOTE: This code will be optimized in the future;
+                byte[] tmpBytes;
+                int i;
+                string tmpStr;
+                tmpStr = node.getAlive();
+                tmpBytes = new byte[tmpStr.Length];
+                i = 0;
+                while (i < tmpStr.Length)
+                {
+                    tmpBytes[i] = (byte)tmpStr[i];
+                    i++;
+                }
+                obuf.writeN(tmpBytes);
+
+                // send request
+                obuf.writeTo((System.IO.Stream)s.GetStream());
+
+                if (traceLevel >= traceThreshold)
+                    OtpTrace.TraceEvent("-> LOOKUP (r4) " + node);
+
+                // receive and decode reply
+                // resptag[1], result[1], port[2], ntype[1], proto[1],
+                // disthigh[2], distlow[2], nlen[2], alivename[n],
+                // elen[2], edata[m]
+                byte[] tmpbuf = new byte[100];
+
+                int n = s.GetStream().Read(tmpbuf, 0, 100);
+
+                if (n < 0)
+                {
+                    // this was an r3 node => not a failure (yet)
+                    if (s != null)
+                        s.Close();
+                    throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
+                }
+
+                OtpInputStream ibuf = new OtpInputStream(tmpbuf);
+
+                int response = ibuf.read1();
+                if (response == port4resp)
+                {
+                    int result = ibuf.read1();
+                    if (result == 0)
+                    {
+                        port = ibuf.read2BE();
+
+                        node.ntype = ibuf.read1();
+                        node._proto = ibuf.read1();
+                        node._distHigh = ibuf.read2BE();
+                        node._distLow = ibuf.read2BE();
+                        // ignore rest of fields
+                    }
+                }
+            }
+            catch (System.IO.IOException)
+            {
+                if (traceLevel >= traceThreshold)
+                    OtpTrace.TraceEvent("<- (no response)");
+                throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
+            }
+            catch (Erlang.Exception)
+            {
+                if (traceLevel >= traceThreshold)
+                    OtpTrace.TraceEvent("<- (invalid response)");
+                throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
+            }
+            catch (System.Net.Sockets.SocketException e)
+            {
+                if (traceLevel >= traceThreshold)
+                    OtpTrace.TraceEvent("<- (no epmd response)");
+                throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
+            }
 			finally
 			{
 				try
