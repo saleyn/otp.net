@@ -351,7 +351,7 @@ namespace Otp
                     OtpTrace.TraceEvent("<- (invalid response)");
                 throw new System.IO.IOException("Nameserver not responding on " + node.host() + " when looking up " + node.getAlive());
             }
-            catch (System.Net.Sockets.SocketException e)
+            catch (System.Net.Sockets.SocketException)
             {
                 if (traceLevel >= traceThreshold)
                     OtpTrace.TraceEvent("<- (no epmd response)");

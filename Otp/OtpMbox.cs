@@ -376,14 +376,14 @@ namespace Otp
             return this.rpcCall(node, mod, fun, args, -1);
         }
 
-        public Erlang.Object rpcCall(string node, string mod, string fun, Erlang.List args, int timeout)
-        {
-            return this.rpcCall(node, new Erlang.Atom(mod), new Erlang.Atom(fun), args, -1);
-        }
-
         public Erlang.Object rpcCall(string node, Erlang.Atom mod, Erlang.Atom fun, Erlang.List args)
         {
             return this.rpcCall(node, mod, fun, args, -1);
+        }
+
+        public Erlang.Object rpcCall(string node, string mod, string fun, Erlang.List args, int timeout)
+        {
+            return this.rpcCall(node, new Erlang.Atom(mod), new Erlang.Atom(fun), args, timeout);
         }
 
         public Erlang.Object rpcCall(string node, Erlang.Atom mod, Erlang.Atom fun, Erlang.List args, int timeout)
