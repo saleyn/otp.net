@@ -1168,8 +1168,14 @@ receive_loop_brk: ;
                 var connected = false;
                 Thread thr = new Thread(
                     () => {
-                        socket.Connect(peer.host(), port);
-                        connected = true;
+                        try
+                        {
+                            socket.Connect(peer.host(), port);
+                            connected = true;
+                        }
+                        catch (System.Exception)
+                        {
+                        }
                     }
                 ) { IsBackground = true, Name = "OtpSockConnectThread" };
 
