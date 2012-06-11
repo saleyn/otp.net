@@ -47,7 +47,7 @@ namespace Otp
 		*
 		* @return the current position in the stream.
 		**/
-		public virtual int getPos()
+		public int getPos()
 		{
 			return (int) base.Position;
 		}
@@ -62,7 +62,7 @@ namespace Otp
 		*
 		* @return the previous position in the stream.
 		**/
-		public virtual int setPos(int pos)
+		public int setPos(int pos)
 		{
 			int oldpos = (int) base.Position;
 			
@@ -85,7 +85,7 @@ namespace Otp
 		* @exception OtpErlangDecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual int readN(byte[] buf)
+		public int readN(byte[] buf)
 		{
 			try
 			{
@@ -106,7 +106,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual int peek()
+		public int peek()
 		{
 			int i;
 			try
@@ -132,7 +132,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual int read1()
+		public int read1()
 		{
 			int i;
 			i = base.ReadByte();
@@ -153,7 +153,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual int read2BE()
+		public int read2BE()
 		{
 			byte[] b = new byte[2];
 			try
@@ -175,7 +175,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual int read4BE()
+		public int read4BE()
 		{
 			byte[] b = new byte[4];
 			try
@@ -186,8 +186,14 @@ namespace Otp
 			{
 				throw new Erlang.Exception("Cannot read from input stream");
 			}
-			return (int)((((int) b[0] << 24) & 0xff000000) + (((int) b[1] << 16) & 0xff0000) + (((int) b[2] << 8) & 0xff00) + (((int) b[3]) & 0xff));
+            return read4BE(b);
 		}
+
+        public static int read4BE(byte[] b)
+        {
+            System.Diagnostics.Debug.Assert(b.Length == 4);
+            return (int)((((int)b[0] << 24) & 0xff000000) + (((int)b[1] << 16) & 0xff0000) + (((int)b[2] << 8) & 0xff00) + (((int)b[3]) & 0xff));
+        }
 
         /*
         * Read an eight byte big endian integer from the stream.
@@ -223,7 +229,7 @@ namespace Otp
         * @exception Erlang.DecodeException if the next byte cannot be
         * read.
         **/
-		public virtual int read2LE()
+		public int read2LE()
 		{
 			byte[] b = new byte[2];
 			try
@@ -246,7 +252,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual int read4LE()
+		public int read4LE()
 		{
 			byte[] b = new byte[4];
 			try
@@ -270,7 +276,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not an atom.
 		**/
-		public virtual bool read_boolean()
+		public bool read_boolean()
 		{
 			return System.Boolean.Parse(this.read_atom());
 		}
@@ -283,7 +289,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not an atom.
 		**/
-		public virtual string read_atom()
+		public string read_atom()
 		{
 			int tag;
 			int len;
@@ -316,7 +322,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not a binary.
 		**/
-		public virtual byte[] read_binary()
+		public byte[] read_binary()
 		{
 			int tag;
 			int len;
@@ -349,7 +355,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not a float.
 		**/
-        public virtual float read_float()
+        public float read_float()
         {
             double d = this.read_double();
             float f = (float)d;
@@ -367,7 +373,7 @@ namespace Otp
         * stream is not a float.
         *
         **/
-        public virtual double read_double()
+        public double read_double()
 		{
 			return getFloatOrDouble();
 		}
@@ -432,7 +438,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next byte cannot be
 		* read.
 		**/
-		public virtual byte read_byte()
+		public byte read_byte()
 		{
 			long l = this.read_long();
 			byte i = (byte) l;
@@ -453,7 +459,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not an integer that can be represented as a char.
 		**/
-		public virtual char read_char()
+		public char read_char()
 		{
 			long l = this.read_long();
 			char i = (char) l;
@@ -474,7 +480,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a positive integer.
 		**/
-		public virtual int read_uint()
+		public int read_uint()
 		{
 			long l = this.read_long();
 			int i = (int) l;
@@ -499,7 +505,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as an integer.
 		**/
-		public virtual int read_int()
+		public int read_int()
 		{
 			long l = this.read_long();
 			int i = (int) l;
@@ -520,7 +526,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a positive short.
 		**/
-		public virtual short read_ushort()
+		public short read_ushort()
 		{
 			long l = this.read_long();
 			short i = (short) l;
@@ -545,7 +551,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a short.
 		**/
-		public virtual short read_short()
+		public short read_short()
 		{
 			long l = this.read_long();
 			short i = (short) l;
@@ -566,7 +572,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a positive long.
 		**/
-		public virtual long read_ulong()
+		public long read_ulong()
 		{
 			long l = this.read_long();
 			
@@ -586,7 +592,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a long.
 		**/
-		public virtual long read_long()
+		public long read_long()
 		{
 			int tag;
 			int sign;
@@ -653,7 +659,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not a list.
 		**/
-		public virtual int read_list_head()
+		public int read_list_head()
 		{
 			int arity = 0;
 			int tag = this.read1();
@@ -699,7 +705,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not a tuple.
 		**/
-		public virtual int read_tuple_head()
+		public int read_tuple_head()
 		{
 			int arity = 0;
 			int tag = this.read1();
@@ -740,7 +746,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not an empty list.
 		**/
-		public virtual int read_nil()
+		public int read_nil()
 		{
 			int arity = 0;
 			int tag = this.read1();
@@ -774,7 +780,7 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream is not an Erlang PID.
 		**/
-		public virtual Erlang.Pid read_pid()
+		public Erlang.Pid read_pid()
 		{
 			System.String node;
 			int id;
@@ -809,7 +815,7 @@ namespace Otp
 		* @exception DecodeException if the next term in the
 		* stream is not an Erlang port.
 		**/
-		public virtual Erlang.Port read_port()
+		public Erlang.Port read_port()
 		{
 			System.String node;
 			int id;
@@ -842,7 +848,7 @@ namespace Otp
 		* @exception DecodeException if the next term in the
 		* stream is not an Erlang reference.
 		**/
-		public virtual Erlang.Ref read_ref()
+		public Erlang.Ref read_ref()
 		{
 			System.String node;
 			int id;
@@ -894,7 +900,7 @@ namespace Otp
 		* @exception DecodeException if the next term in the
 		* stream is not a string.
 		**/
-		public virtual System.String read_string()
+		public System.String read_string()
 		{
 			int tag;
 			int len;
@@ -947,7 +953,7 @@ namespace Otp
 		* @exception DecodeException if the stream does not
 		* contain a known Erlang type at the next position.
 		**/
-		public virtual Erlang.Object read_any()
+		public Erlang.Object read_any()
 		{
 			// calls one of the above functions, depending on o
 			int tag = this.peek();

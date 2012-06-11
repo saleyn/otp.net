@@ -78,6 +78,11 @@ namespace Otp
         protected internal OtpLocalNode self; // this nodes id
         internal System.String name; // local name of this connection
         protected string auth_cookie;
+        
+        private long sentBytes;                   // Total number of bytes sent
+        private long receivedBytes;               // Total number of bytes received
+        private long sentMsgs;                    // Total number of messages sent
+        private long receivedMsgs;                // Total number of messages received
 
         protected internal bool cookieOk = false; // already checked the cookie for this connection
         protected internal bool sendCookie = true; // Send cookies in messages?
@@ -108,6 +113,45 @@ namespace Otp
             set { _connectTimeout = value; }
         }
 
+        /// <summary>
+        /// Total number of bytes sent through connection
+        /// </summary>
+        public long SentBytes { get { return sentBytes; } }
+
+        /// <summary>
+        /// Total number of bytes received from connection
+        /// </summary>
+        public long ReceivedBytes { get { return receivedBytes; } }
+
+        /// <summary>
+        /// Total number of messages sent through connection
+        /// </summary>
+        public long SentMsgs { get { return sentMsgs; } }
+
+        /// <summary>
+        /// Total number of messages received from connection
+        /// </summary>
+        public long ReceivedMsgs { get { return receivedMsgs; } }
+
+        public enum Operation { Read, Write };
+
+        /// <summary>
+        /// Delegate called on read/write from socket
+        /// </summary>
+        public delegate void OnReadWriteDelegate(AbstractConnection con, Operation op,
+            long lastBytes, long totalBytes, long totalMsgs);
+
+        private OnReadWriteDelegate onReadWrite = null;
+
+        /// <summary>
+        /// Delegate invoked on read/write from socket
+        /// </summary>
+        public OnReadWriteDelegate OnReadWrite
+        {
+            get { return onReadWrite; }
+            set { onReadWrite = value; }
+        }
+
         protected internal static System.Random random = null;
 
         /*
@@ -125,7 +169,8 @@ namespace Otp
             this.peer = new OtpPeer();
             this.socket = s;
             this.auth_cookie = self.cookie();
-
+            this.sentBytes = 0;
+            this.receivedBytes = 0;
             this.socket.NoDelay = true;
             // Use keepalive timer
             this.socket.Client.SetSocketOption(
@@ -184,6 +229,8 @@ namespace Otp
             this.self = self;
             this.socket = null;
             this.auth_cookie = cookie ?? self._cookie;
+            this.sentBytes = 0;
+            this.receivedBytes = 0;
             
             //this.IsBackground = true;
             
@@ -482,10 +529,10 @@ namespace Otp
                 return ;
             }
 
-            byte[] lbuf = new byte[4];
             OtpInputStream ibuf;
             Erlang.Object traceobj;
             int len;
+            byte[] header = new byte[4];
             byte[] tock = new byte[]{0, 0, 0, 0};
             
             try
@@ -500,11 +547,10 @@ namespace Otp
                         // read 4 bytes - get length of incoming packet
                         // socket.getInputStream().read(lbuf);
                         int n;
-                        if ((n = readSock(socket, lbuf)) < lbuf.Length)
-                            throw new System.Exception("Read " + n + " out of " + lbuf.Length + " bytes!");
+                        if ((n = readSock(socket, header, false)) < header.Length)
+                            throw new System.Exception("Read " + n + " out of " + header.Length + " bytes!");
 
-                        ibuf = new OtpInputStream(lbuf);
-                        len = ibuf.read4BE();
+                        len = OtpInputStream.read4BE(header);
                         
                         //  received tick? send tock!
                         if (len == 0)
@@ -522,7 +568,7 @@ namespace Otp
                     // got a real message (maybe) - read len bytes
                     byte[] tmpbuf = new byte[len];
                     // i = socket.getInputStream().read(tmpbuf);
-                    int m = readSock(socket, tmpbuf);
+                    int m = readSock(socket, tmpbuf, true);
                     if (m < len)
                         throw new System.Exception("Read " + m + " out of " + len + " bytes!");
 
@@ -978,12 +1024,30 @@ receive_loop_brk: ;
                         // First make OtpInputStream, then decode.
                         try
                         {
-                            Erlang.Object h = (header.getOtpInputStream(5)).read_any();
-                            OtpTrace.TraceEvent("-> " + headerType(h) + " " + h.ToString());
-                            
-                            Erlang.Object o = (payload.getOtpInputStream(0)).read_any();
-                            OtpTrace.TraceEvent("   " + o.ToString());
-                            o = null;
+                            if (traceLevel >= OtpTrace.Type.wireThreshold)
+                            {
+                                Erlang.Object h = (header.getOtpInputStream(5)).read_any();
+                                Erlang.Binary hb = header.ToBinary();
+                                Erlang.Binary ob = payload.ToBinary();
+                                System.Text.StringBuilder s = new System.Text.StringBuilder();
+                                s.AppendFormat("-> {0} {1} (header_sz={2}, msg_sz={3})\n" +
+                                               "   Header: {4}\n" +
+                                               "   Msg:    {5}", headerType(h), h.ToString(), hb.size(), ob.size(),
+                                                                 hb.ToBinaryString(), ob.ToBinaryString());
+                                OtpTrace.TraceEvent(s.ToString());
+                                h  = null;
+                                hb = null;
+                                ob = null;
+                            }
+                            else
+                            {
+                                Erlang.Object h = (header.getOtpInputStream(5)).read_any();
+                                OtpTrace.TraceEvent("-> " + headerType(h) + " " + h.ToString());
+                                Erlang.Object o = (payload.getOtpInputStream(0)).read_any();
+                                OtpTrace.TraceEvent("   " + o.ToString());
+                                h = null;
+                                o = null;
+                            }
                         }
                         catch (Erlang.Exception e)
                         {
@@ -993,6 +1057,12 @@ receive_loop_brk: ;
                     
                     header.writeTo((System.IO.Stream) socket.GetStream());
                     payload.writeTo((System.IO.Stream) socket.GetStream());
+
+                    long written = header.count() + payload.count();
+                    sentBytes += written;
+                    sentMsgs++;
+                    if (onReadWrite != null)
+                        onReadWrite(this, Operation.Write, written, sentBytes, sentMsgs);
                 }
                 catch (System.Exception e)
                 {
@@ -1091,7 +1161,7 @@ receive_loop_brk: ;
         }
         
         /*this method now throws exception if we don't get full read */
-        protected internal virtual int readSock(System.Net.Sockets.TcpClient s, byte[] b)
+        protected internal virtual int readSock(System.Net.Sockets.TcpClient s, byte[] b, bool readingPayload)
         {
             int got = 0;
             int len = (int) (b.Length);
@@ -1119,8 +1189,16 @@ receive_loop_brk: ;
                 {
                     throw new System.IO.IOException("Remote connection closed");
                 }
-                else
-                    got += i;
+
+                got += i;
+            }
+
+            receivedBytes += got;
+            if (readingPayload)
+            {
+                receivedMsgs++;
+                if (onReadWrite != null)
+                    onReadWrite(this, Operation.Read, got + 4 /* header len */, receivedBytes, receivedMsgs);
             }
             return got;
         }
@@ -1353,11 +1431,11 @@ receive_loop_brk: ;
             byte[] lbuf = new byte[2];
             byte[] tmpbuf;
             
-            readSock(socket, lbuf);
+            readSock(socket, lbuf, false);
             OtpInputStream ibuf = new OtpInputStream(lbuf);
             int len = ibuf.read2BE();
             tmpbuf = new byte[len];
-            readSock(socket, tmpbuf);
+            readSock(socket, tmpbuf, true);
             return tmpbuf;
         }
         

@@ -153,7 +153,22 @@ namespace Otp.Erlang
 		{
 			return "#Bin<" + bin.Length + ">";
 		}
-		
+
+    /// <summary>
+    /// Returns binary representation of the string encoded as &lt;&lt;...&gt;&gt;
+    /// </summary>
+    /// <returns></returns>
+    public string ToBinaryString()
+    {
+        System.Text.StringBuilder s = new System.Text.StringBuilder();
+        s.Append("<<");
+        if (bin.Length > 0) s.Append(bin[0]);
+        for (int i = 1; i < bin.Length; i++)
+            s.AppendFormat(",{0}", bin[i]);
+        s.Append(">>");
+        return s.ToString();
+    }
+
 		/*
 		* Convert this binary to the equivalent Erlang external representation.
 		*

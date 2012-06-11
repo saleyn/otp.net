@@ -6,12 +6,11 @@ namespace Otp
     {
         public enum Type
         {
-            defaultLevel = 0
-          ,
-            sendThreshold = 1
-                ,
-            ctrlThreshold = 2
-                , handshakeThreshold = 3
+              defaultLevel = 0
+            , sendThreshold = 1
+            , ctrlThreshold = 2
+            , handshakeThreshold = 3
+            , wireThreshold = 4
         }
 
         public static Type traceLevel = Type.defaultLevel;

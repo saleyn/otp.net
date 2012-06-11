@@ -1,5 +1,6 @@
 Release notes
 -------------
+TODO: When connection is broken notify all mailboxes waiting for messages from that connection.
 
 V 0.7, February 2011 / Serge Aleynikov
 --------------------------------------
