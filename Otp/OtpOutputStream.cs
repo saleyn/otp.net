@@ -68,7 +68,7 @@ namespace Otp
         public OtpOutputStream(Erlang.Object o, bool writeVersion) : this()
         {
             if (writeVersion)
-                this.write(AbstractConnection.version);
+                this.write(OtpExternal.versionTag);
             this.write_any(o);
         }
 

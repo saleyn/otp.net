@@ -60,11 +60,6 @@ namespace Otp
         
         protected internal static readonly byte passThrough = 0x70;
         
-        /// <summary>
-        /// Erlang protocol version byte
-        /// </summary>
-        public static readonly byte version = 0x83;
-        
         // MD5 challenge messsage tags
         protected internal const int ChallengeReply = 'r';
         protected internal const int ChallengeAck = 'a';
@@ -282,7 +277,7 @@ namespace Otp
             // preamble: 4 byte length + "passthrough" tag + version
             header.write4BE(0); // reserve space for length
             header.write1(passThrough);
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // header info
             header.write_tuple_head(4);
@@ -295,7 +290,7 @@ namespace Otp
             header.write_atom(dest);
             
             // version for payload
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // fix up length in preamble
             header.poke4BE(0, header.count() + payload.count() - 4);
@@ -323,7 +318,7 @@ namespace Otp
             // preamble: 4 byte length + "passthrough" tag + version
             header.write4BE(0); // reserve space for length
             header.write1(passThrough);
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // header info
             header.write_tuple_head(3);
@@ -335,7 +330,7 @@ namespace Otp
             header.write_any(dest);
             
             // version for payload
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // fix up length in preamble
             header.poke4BE(0, header.count() + payload.count() - 4);
@@ -356,7 +351,7 @@ namespace Otp
                 // preamble: 4 byte length + "passthrough" tag + version
                 header.write4BE(0); // reserve space for length
                 header.write1(passThrough);
-                header.write1(version);
+                header.write1(OtpExternal.versionTag);
                 
                 header.write_tuple_head(4);
                 header.write_long((long)OtpMsg.Tag.regSendTag);
@@ -365,7 +360,7 @@ namespace Otp
                 header.write_atom("auth");
                 
                 // version for payload
-                header.write1(version);
+                header.write1(OtpExternal.versionTag);
                 
                 // the payload
                 
@@ -426,7 +421,7 @@ namespace Otp
             // preamble: 4 byte length + "passthrough" tag
             header.write4BE(0); // reserve space for length
             header.write1(passThrough);
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // header
             header.write_tuple_head(3);
@@ -461,7 +456,7 @@ namespace Otp
             // preamble: 4 byte length + "passthrough" tag
             header.write4BE(0); // reserve space for length
             header.write1(passThrough);
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // header
             header.write_tuple_head(3);
@@ -506,7 +501,7 @@ namespace Otp
             // preamble: 4 byte length + "passthrough" tag
             header.write4BE(0); // reserve space for length
             header.write1(passThrough);
-            header.write1(version);
+            header.write1(OtpExternal.versionTag);
             
             // header
             header.write_tuple_head(4);
