@@ -57,6 +57,7 @@ namespace Otp
             random = new System.Random();
         }
         protected internal const int headerLen = 2048; // more than enough
+        private const int defaultMaxPayloadLength = 128 * 1024 * 1024; // max size of the payload sent by peer
         
         protected internal static readonly byte passThrough = 0x70;
         
@@ -78,6 +79,8 @@ namespace Otp
         private long receivedBytes;               // Total number of bytes received
         private long sentMsgs;                    // Total number of messages sent
         private long receivedMsgs;                // Total number of messages received
+        private int  maxPayloadLength;
+        private byte[] payloadBuf;                // Temporary payload buffer
 
         protected internal bool cookieOk = false; // already checked the cookie for this connection
         protected internal bool sendCookie = true; // Send cookies in messages?
@@ -128,6 +131,16 @@ namespace Otp
         /// </summary>
         public long ReceivedMsgs { get { return receivedMsgs; } }
 
+        /// <summary>
+        /// Max size of the message accepted from the peer.
+        /// The connection will be closed if a message is received of size greater than this.
+        /// </summary>
+        public int MaxPayloadLength
+        {
+            get { return maxPayloadLength; }
+            set { maxPayloadLength = value; }
+        }
+
         public enum Operation { Read, Write };
 
         /// <summary>
@@ -149,6 +162,18 @@ namespace Otp
 
         protected internal static System.Random random = null;
 
+        private AbstractConnection(OtpLocalNode self, OtpPeer peer, System.Net.Sockets.TcpClient s, string cookie)
+        {
+            this.peer = peer;
+            this.self = self;
+            this.socket = s;
+            this.auth_cookie = cookie ?? self._cookie;
+            this.sentBytes = 0;
+            this.receivedBytes = 0;
+            this.maxPayloadLength = defaultMaxPayloadLength;
+            this.payloadBuf = new byte[1024 * 1024];
+        }
+
         /*
         * Accept an incoming connection from a remote node. Used by {@link
         * OtpSelf#accept() OtpSelf.accept()} to create a connection
@@ -159,13 +184,8 @@ namespace Otp
         * @exception OtpAuthException if handshake resulted in an authentication error
         */
         protected internal AbstractConnection(OtpLocalNode self, System.Net.Sockets.TcpClient s)
+            : this(self, new OtpPeer(), s, null)
         {
-            this.self = self;
-            this.peer = new OtpPeer();
-            this.socket = s;
-            this.auth_cookie = self.cookie();
-            this.sentBytes = 0;
-            this.receivedBytes = 0;
             this.socket.NoDelay = true;
             // Use keepalive timer
             this.socket.Client.SetSocketOption(
@@ -219,16 +239,8 @@ namespace Otp
         * @exception OtpAuthException if handshake resulted in an authentication error.
         */
         protected internal AbstractConnection(OtpLocalNode self, OtpPeer other, string cookie)
+            : this(self, other, null, cookie)
         {
-            this.peer = other;
-            this.self = self;
-            this.socket = null;
-            this.auth_cookie = cookie ?? self._cookie;
-            this.sentBytes = 0;
-            this.receivedBytes = 0;
-            
-            //this.IsBackground = true;
-            
             // now get a connection between the two...
             int port = OtpEpmd.lookupPort(peer);
             
@@ -542,32 +554,35 @@ namespace Otp
                         // read 4 bytes - get length of incoming packet
                         // socket.getInputStream().read(lbuf);
                         int n;
-                        if ((n = readSock(socket, header, false)) < header.Length)
-                            throw new System.Exception("Read " + n + " out of " + header.Length + " bytes!");
+                        if ((n = readSock(socket, header, header.Length, false)) < header.Length)
+                            throw new System.Exception(String.Format("Read {0} out of {1} bytes!", n, header.Length));
 
                         len = OtpInputStream.read4BE(header);
                         
                         //  received tick? send tock!
                         if (len == 0)
-                            lock(this)
+                            lock (this)
                             {
                                 System.Byte[] temp_bytearray;
                                 temp_bytearray = tock;
                                 if (socket != null)
-                                    ((System.IO.Stream) socket.GetStream()).Write(temp_bytearray, 0, temp_bytearray.Length);
+                                    ((System.IO.Stream)socket.GetStream()).Write(temp_bytearray, 0, temp_bytearray.Length);
                             }
+                        else if (len > maxPayloadLength)
+                            throw new System.Exception(
+                                String.Format("Message size too long (max={0}, got={1})", maxPayloadLength, len));
                         
                     }
                     while (len == 0); // tick_loop
                     
                     // got a real message (maybe) - read len bytes
-                    byte[] tmpbuf = new byte[len];
+                    byte[] tmpbuf = len > payloadBuf.Length ? new byte[len] : payloadBuf;
                     // i = socket.getInputStream().read(tmpbuf);
-                    int m = readSock(socket, tmpbuf, true);
+                    int m = readSock(socket, tmpbuf, len, true);
                     if (m < len)
-                        throw new System.Exception("Read " + m + " out of " + len + " bytes!");
+                        throw new System.Exception(String.Format("Read {0} out of {1} bytes!", m, len));
 
-                    ibuf = new OtpInputStream(tmpbuf);
+                    ibuf = new OtpInputStream(tmpbuf, 0, len);
                     
                     if (ibuf.read1() != passThrough)
                     {
@@ -1156,10 +1171,10 @@ receive_loop_brk: ;
         }
         
         /*this method now throws exception if we don't get full read */
-        protected internal virtual int readSock(System.Net.Sockets.TcpClient s, byte[] b, bool readingPayload)
+        protected internal virtual int readSock(System.Net.Sockets.TcpClient s, byte[] b, int sz, bool readingPayload)
         {
             int got = 0;
-            int len = (int) (b.Length);
+            int len = sz;
             int i;
             System.IO.Stream is_Renamed = null;
             
@@ -1426,11 +1441,11 @@ receive_loop_brk: ;
             byte[] lbuf = new byte[2];
             byte[] tmpbuf;
             
-            readSock(socket, lbuf, false);
+            readSock(socket, lbuf, (int)lbuf.Length, false);
             OtpInputStream ibuf = new OtpInputStream(lbuf);
             int len = ibuf.read2BE();
             tmpbuf = new byte[len];
-            readSock(socket, tmpbuf, true);
+            readSock(socket, tmpbuf, len, true);
             return tmpbuf;
         }
         

@@ -27,10 +27,14 @@ namespace Otp
 	**/
 	public class OtpInputStream:System.IO.MemoryStream
 	{
+        byte[] m_buf2;
+        byte[] m_buf4;
+        byte[] m_buf8;
+
 		/*
 		* Create a stream from a buffer containing encoded Erlang terms.
 		**/
-		public OtpInputStream(byte[] buf):base(buf)
+		public OtpInputStream(byte[] buf):this(buf, 0, buf.Length)
 		{
 		}
 		
@@ -38,8 +42,11 @@ namespace Otp
 		* Create a stream from a buffer containing encoded
 		* Erlang terms at the given offset and length.
 		**/
-		public OtpInputStream(byte[] buf, int offset, int length):base(buf, offset, length)
+		public OtpInputStream(byte[] buf, int offset, int length):base(buf, offset, length, false, true)
 		{
+            m_buf2 = new byte[2];
+            m_buf4 = new byte[4];
+            m_buf8 = new byte[8];
 		}
 		
 		/*
@@ -155,16 +162,15 @@ namespace Otp
 		**/
 		public int read2BE()
 		{
-			byte[] b = new byte[2];
 			try
 			{
-				base.Read(b, 0, b.Length);
+                base.Read(m_buf2, 0, m_buf2.Length);
 			}
 			catch (System.IO.IOException)
 			{
 				throw new Erlang.Exception("Cannot read from input stream");
 			}
-			return ((((int) b[0] << 8) & 0xff00) + (((int) b[1]) & 0xff));
+            return ((((int)m_buf2[0] << 8) & 0xff00) + (((int)m_buf2[1]) & 0xff));
 		}
 		
 		/*
@@ -177,16 +183,15 @@ namespace Otp
 		**/
 		public int read4BE()
 		{
-			byte[] b = new byte[4];
 			try
 			{
-				base.Read(b, 0, b.Length);
+                base.Read(m_buf4, 0, m_buf4.Length);
 			}
 			catch (System.IO.IOException)
 			{
 				throw new Erlang.Exception("Cannot read from input stream");
 			}
-            return read4BE(b);
+            return read4BE(m_buf4);
 		}
 
         public static int read4BE(byte[] b)
@@ -205,18 +210,23 @@ namespace Otp
         **/
         public System.UInt64 read8BE()
         {
-            byte[] b = new byte[8];
             try
             {
-                base.Read(b, 0, b.Length);
+                base.Read(m_buf8, 0, m_buf8.Length);
             }
             catch (System.IO.IOException)
             {
                 throw new Erlang.Exception("Cannot read from input stream");
             }
-            System.UInt64 i1 = (System.UInt64)((((int)b[0] << 24) & 0xff000000) + (((int)b[1] << 16) & 0xff0000) + (((int)b[2] << 8) & 0xff00) + (((int)b[3]) & 0xff));
+            System.UInt64 i1 = (System.UInt64)((((int)m_buf8[0] << 24) & 0xff000000)
+                             + (((int)m_buf8[1] << 16) & 0xff0000)
+                             + (((int)m_buf8[2] << 8) & 0xff00)
+                             + (((int)m_buf8[3]) & 0xff));
             System.UInt64 i2 = (i1 << 32) & 0xffffffff00000000
-                             + (System.UInt64)((((int)b[4] << 24) & 0xff000000) + (((int)b[5] << 16) & 0xff0000) + (((int)b[6] << 8) & 0xff00) + (((int)b[7]) & 0xff));
+                             + (System.UInt64)((((int)m_buf8[4] << 24) & 0xff000000)
+                             + (((int)m_buf8[5] << 16) & 0xff0000)
+                             + (((int)m_buf8[6] << 8) & 0xff00)
+                             + (((int)m_buf8[7]) & 0xff));
             return i2;
         }
 
@@ -231,16 +241,15 @@ namespace Otp
         **/
 		public int read2LE()
 		{
-			byte[] b = new byte[2];
 			try
 			{
-				base.Read(b, 0, b.Length);
+                base.Read(m_buf2, 0, m_buf2.Length);
 			}
 			catch (System.IO.IOException)
 			{
 				throw new Erlang.Exception("Cannot read from input stream");
 			}
-			return ((((int) b[1] << 8) & 0xff00) + (((int) b[0]) & 0xff));
+            return ((((int)m_buf2[1] << 8) & 0xff00) + (((int)m_buf2[0]) & 0xff));
 		}
 		
 		/*
@@ -254,16 +263,16 @@ namespace Otp
 		**/
 		public int read4LE()
 		{
-			byte[] b = new byte[4];
 			try
 			{
-				base.Read(b, 0, b.Length);
+                base.Read(m_buf4, 0, m_buf4.Length);
 			}
 			catch (System.IO.IOException)
 			{
 				throw new Erlang.Exception("Cannot read from input stream");
 			}
-			return (int)((((int) b[3] << 24) & 0xff000000) + (((int) b[2] << 16) & 0xff0000) + (((int) b[1] << 8) & 0xff00) + (((int) b[0]) & 0xff));
+            return (int)((((int)m_buf4[3] << 24) & 0xff000000) + (((int)m_buf4[2] << 16) & 0xff0000)
+                + (((int)m_buf4[1] << 8) & 0xff00) + (((int)m_buf4[0]) & 0xff));
 		}
 		
 		/*
@@ -291,11 +300,7 @@ namespace Otp
 		**/
 		public string read_atom()
 		{
-			int tag;
-			int len;
-			byte[] strbuf;
-			
-			tag = this.read1();
+			int tag = this.read1();
 			if (tag == OtpExternal.versionTag)
 			{
 				tag = this.read1();
@@ -305,13 +310,14 @@ namespace Otp
 			{
 				throw new Erlang.Exception("wrong tag encountered, expected " + OtpExternal.atomTag + ", got " + tag);
 			}
-			
-			len = this.read2BE();
-			
-			strbuf = new byte[len];
-			this.readN(strbuf);
-            int n = strbuf.Length > OtpExternal.maxAtomLength ? OtpExternal.maxAtomLength : strbuf.Length;
-            return System.Text.Encoding.ASCII.GetString(strbuf, 0, n);
+
+            int len = this.read2BE();
+            int n = len > OtpExternal.maxAtomLength ? OtpExternal.maxAtomLength : len;
+            string s = System.Text.Encoding.ASCII.GetString(base.GetBuffer(), (int)base.Position, len);
+            base.Position += len;
+            if (n != len)
+                s = s.Substring(0, n);
+            return s;
 		}
 		
 		/*
@@ -415,14 +421,13 @@ namespace Otp
             }
             else if (tag == OtpExternal.newFloatTag)
             {
-                byte[] data = new byte[8];
-                this.readN(data);
+                this.readN(m_buf8);
                 // IEEE 754 decoder
                 if (BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(data);
+                    Array.Reverse(m_buf8);
                 }
-                return BitConverter.ToDouble(data, 0);
+                return BitConverter.ToDouble(m_buf8, 0);
             }
             else
             {
@@ -610,15 +615,9 @@ namespace Otp
 				case OtpExternal.smallIntTag: 
 					val = this.read1();
 					break;
-					
-				
-				
 				case OtpExternal.intTag: 
 					val = this.read4BE();
 					break;
-					
-				
-				
 				case OtpExternal.smallBigTag: {
 					arity = this.read1();
                     sign  = this.read1();
@@ -641,8 +640,6 @@ namespace Otp
 					
 					break;
 				}
-				
-				
 				case OtpExternal.largeBigTag: default: 
 					throw new Erlang.Exception("Not valid integer tag: " + tag);
 				
@@ -674,24 +671,14 @@ namespace Otp
 				case OtpExternal.nilTag: 
 					arity = 0;
 					break;
-					
-				
-				
 				case OtpExternal.stringTag: 
 					arity = this.read2BE();
 					break;
-					
-				
-				
 				case OtpExternal.listTag: 
 					arity = this.read4BE();
 					break;
-					
-				
-				
 				default: 
 					throw new Erlang.Exception("Not valid list tag: " + tag);
-				
 			}
 			
 			return arity;
@@ -721,15 +708,9 @@ namespace Otp
 				case OtpExternal.smallTupleTag: 
 					arity = this.read1();
 					break;
-					
-				
-				
 				case OtpExternal.largeTupleTag: 
 					arity = this.read4BE();
 					break;
-					
-				
-				
 				default: 
 					throw new Erlang.Exception("Not valid tuple tag: " + tag);
 				
@@ -761,12 +742,8 @@ namespace Otp
 				case OtpExternal.nilTag: 
 					arity = 0;
 					break;
-					
-				
-				
 				default: 
 					throw new Erlang.Exception("Not valid nil tag: " + tag);
-				
 			}
 			
 			return arity;
@@ -904,7 +881,6 @@ namespace Otp
 		{
 			int tag;
 			int len;
-			byte[] strbuf;
 			char[] charbuf;
 			
 			tag = this.read1();
@@ -917,13 +893,10 @@ namespace Otp
 			{
 				
 				case OtpExternal.stringTag: 
-					char[] tmpChar;
 					len = this.read2BE();
-					strbuf = new byte[len];
-					this.readN(strbuf);
-					tmpChar = new char[strbuf.Length];
-					strbuf.CopyTo(tmpChar, 0);
-					return new System.String(tmpChar);
+                    string s = System.Text.Encoding.ASCII.GetString(base.GetBuffer(), (int)base.Position, len);
+                    base.Position += len;
+                    return s;
 
 				case OtpExternal.nilTag:
 					return "";
@@ -937,7 +910,7 @@ namespace Otp
 						charbuf[i] = this.read_char();
 
 					this.read_nil();
-					return new System.String(charbuf);
+					return new string(charbuf);
 
 				default:
 					throw new Erlang.Exception("Wrong tag encountered, expected " + OtpExternal.stringTag + " or " + OtpExternal.listTag + ", got " + tag);
