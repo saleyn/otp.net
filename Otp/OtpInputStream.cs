@@ -940,7 +940,9 @@ namespace Otp
 
 			switch (tag)
 			{
-				case OtpExternal.smallIntTag: case OtpExternal.intTag: case OtpExternal.smallBigTag:
+				case OtpExternal.smallIntTag:
+                case OtpExternal.intTag:
+                case OtpExternal.smallBigTag:
 					return new Erlang.Long(this);
 
 				case OtpExternal.atomTag:
