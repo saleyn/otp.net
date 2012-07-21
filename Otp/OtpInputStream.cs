@@ -577,16 +577,9 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a positive long.
 		**/
-		public long read_ulong()
+		public ulong read_ulong()
 		{
-			long l = this.read_long();
-			
-			if (l < 0)
-			{
-				throw new Erlang.Exception("Value not unsigned: " + l);
-			}
-			
-			return l;
+			return (ulong)read_long(false);
 		}
 		
 		/*
@@ -597,7 +590,9 @@ namespace Otp
 		* @exception Erlang.DecodeException if the next term in the
 		* stream can not be represented as a long.
 		**/
-		public long read_long()
+        public long read_long() { return read_long(true); }
+
+		private long read_long(bool signed)
 		{
 			int tag;
 			int sign;
@@ -637,12 +632,15 @@ namespace Otp
                     }
 
 					val = (sign == 0 ? val : -val); // should deal with overflow
-					
-					break;
+
+                    if (sign == 1 && !signed)
+                        throw new Erlang.Exception("Requested unsigned, but read signed long value: " + val.ToString());
+
+                    break;
 				}
-				case OtpExternal.largeBigTag: default: 
+				case OtpExternal.largeBigTag:
+                default: 
 					throw new Erlang.Exception("Not valid integer tag: " + tag);
-				
 			}
 			
 			return val;
