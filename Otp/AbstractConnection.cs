@@ -80,7 +80,6 @@ namespace Otp
         private long sentMsgs;                    // Total number of messages sent
         private long receivedMsgs;                // Total number of messages received
         private int  maxPayloadLength;
-        private byte[] payloadBuf;                // Temporary payload buffer
 
         protected internal bool cookieOk = false; // already checked the cookie for this connection
         protected internal bool sendCookie = true; // Send cookies in messages?
@@ -171,7 +170,6 @@ namespace Otp
             this.sentBytes = 0;
             this.receivedBytes = 0;
             this.maxPayloadLength = defaultMaxPayloadLength;
-            this.payloadBuf = new byte[1024 * 1024];
         }
 
         /*
@@ -541,6 +539,7 @@ namespace Otp
             int len;
             byte[] header = new byte[4];
             byte[] tock = new byte[]{0, 0, 0, 0};
+            byte[] payloadBuf = new byte[1024 * 1024];
             
             try
             {
@@ -558,7 +557,7 @@ namespace Otp
                             throw new System.Exception(String.Format("Read {0} out of {1} bytes!", n, header.Length));
 
                         len = OtpInputStream.read4BE(header);
-                        
+
                         //  received tick? send tock!
                         if (len == 0)
                             lock (this)
@@ -568,27 +567,27 @@ namespace Otp
                                 if (socket != null)
                                     ((System.IO.Stream)socket.GetStream()).Write(temp_bytearray, 0, temp_bytearray.Length);
                             }
-                        else if (len > maxPayloadLength)
-                            throw new System.Exception(
-                                String.Format("Message size too long (max={0}, got={1})", maxPayloadLength, len));
-                        
                     }
                     while (len == 0); // tick_loop
-                    
+
+                    if (len > maxPayloadLength)
+                        throw new System.Exception(
+                            String.Format("Message size too long (max={0}, got={1})", maxPayloadLength, len));
+
                     // got a real message (maybe) - read len bytes
-                    byte[] tmpbuf = len > payloadBuf.Length ? new byte[len] : payloadBuf;
+                    byte[] tmpbuf = new byte[len]; // len > payloadBuf.Length ? new byte[len] : payloadBuf;
                     // i = socket.getInputStream().read(tmpbuf);
                     int m = readSock(socket, tmpbuf, len, true);
-                    if (m < len)
+                    if (m != len)
                         throw new System.Exception(String.Format("Read {0} out of {1} bytes!", m, len));
 
                     ibuf = new OtpInputStream(tmpbuf, 0, len);
-                    
+
                     if (ibuf.read1() != passThrough)
                     {
                         goto receive_loop_brk;
                     }
-                    
+
                     // got a real message (really)
                     Erlang.Atom reason = null;
                     Erlang.Atom cookie = null;
@@ -598,27 +597,25 @@ namespace Otp
                     Erlang.Pid to;
                     Erlang.Pid from;
                     Erlang.Ref eref;
-                    
+
                     // decode the header
                     tmp = ibuf.read_any();
                     if (!(tmp is Erlang.Tuple))
-                    {
                         goto receive_loop_brk;
-                    }
-                    
-                    head = (Erlang.Tuple) tmp;
+
+                    head = (Erlang.Tuple)tmp;
                     if (!(head.elementAt(0) is Erlang.Long))
                     {
                         goto receive_loop_brk;
                     }
-                    
+
                     // lets see what kind of message this is
-                    OtpMsg.Tag tag = (OtpMsg.Tag)((Erlang.Long)(head.elementAt(0))).longValue();
-                    
+                    OtpMsg.Tag tag = (OtpMsg.Tag)head.elementAt(0).longValue();
+
                     switch (tag)
                     {
                         case OtpMsg.Tag.sendTag:
-                        case OtpMsg.Tag.sendTTTag: 
+                        case OtpMsg.Tag.sendTTTag:
                             // { SEND, Cookie, ToPid, TraceToken }
                             if (!cookieOk)
                             {
@@ -627,7 +624,7 @@ namespace Otp
                                 {
                                     goto receive_loop_brk;
                                 }
-                                cookie = (Erlang.Atom) head.elementAt(1);
+                                cookie = (Erlang.Atom)head.elementAt(1);
                                 if (sendCookie)
                                 {
                                     if (!cookie.atomValue().Equals(auth_cookie))
@@ -660,7 +657,7 @@ namespace Otp
                                 ibuf.Seek(mark, System.IO.SeekOrigin.Begin);
                             }
 
-                            to = (Erlang.Pid) (head.elementAt(2));
+                            to = (Erlang.Pid)(head.elementAt(2));
 
                             deliver(new OtpMsg(to, ibuf));
                             break;
@@ -675,7 +672,7 @@ namespace Otp
                                 {
                                     goto receive_loop_brk;
                                 }
-                                cookie = (Erlang.Atom) head.elementAt(2);
+                                cookie = (Erlang.Atom)head.elementAt(2);
                                 if (sendCookie)
                                 {
                                     if (!cookie.atomValue().Equals(auth_cookie))
@@ -696,7 +693,7 @@ namespace Otp
                             if (traceLevel >= OtpTrace.Type.sendThreshold)
                             {
                                 OtpTrace.TraceEvent("<- " + headerType(head) + " " + head.ToString());
-                                
+
                                 /*show received payload too */
                                 long mark = ibuf.Position;
                                 traceobj = ibuf.read_any();
@@ -708,8 +705,8 @@ namespace Otp
                                 ibuf.Seek(mark, System.IO.SeekOrigin.Begin);
                             }
 
-                            from = (Erlang.Pid) (head.elementAt(1));
-                            toName = (Erlang.Atom) (head.elementAt(3));
+                            from = (Erlang.Pid)(head.elementAt(1));
+                            toName = (Erlang.Atom)(head.elementAt(3));
 
                             deliver(new OtpMsg(from, toName.atomValue(), ibuf));
                             break;
@@ -725,11 +722,11 @@ namespace Otp
                             {
                                 OtpTrace.TraceEvent("<- " + headerType(head) + " " + head.ToString());
                             }
-                            
-                            from = (Erlang.Pid) (head.elementAt(1));
-                            to = (Erlang.Pid) (head.elementAt(2));
-                            reason = (Erlang.Atom) head.elementAt(3);
-                            
+
+                            from = (Erlang.Pid)(head.elementAt(1));
+                            to = (Erlang.Pid)(head.elementAt(2));
+                            reason = (Erlang.Atom)head.elementAt(3);
+
                             deliver(new OtpMsg(tag, from, to, reason));
                             break;
 
@@ -746,9 +743,9 @@ namespace Otp
                                 OtpTrace.TraceEvent("<- " + headerType(head) + " " + head.ToString());
                             }
 
-                            from = (Erlang.Pid) (head.elementAt(1));
-                            to = (Erlang.Pid) (head.elementAt(2));
-                            reason = (Erlang.Atom) head.elementAt(4);
+                            from = (Erlang.Pid)(head.elementAt(1));
+                            to = (Erlang.Pid)(head.elementAt(2));
+                            reason = (Erlang.Atom)head.elementAt(4);
 
                             deliver(new OtpMsg(tag, from, to, reason));
                             break;
@@ -760,9 +757,9 @@ namespace Otp
                             {
                                 OtpTrace.TraceEvent("<- " + headerType(head) + " " + head.ToString());
                             }
-                            
-                            from = (Erlang.Pid) (head.elementAt(1));
-                            to = (Erlang.Pid) (head.elementAt(2));
+
+                            from = (Erlang.Pid)(head.elementAt(1));
+                            to = (Erlang.Pid)(head.elementAt(2));
 
                             deliver(new OtpMsg(tag, from, to));
                             break;
@@ -779,7 +776,7 @@ namespace Otp
                             break;
 
                         case OtpMsg.Tag.monitorPTag:
-                            // {MONITOR_P, FromPid, ToProc, Ref}
+                        // {MONITOR_P, FromPid, ToProc, Ref}
                         case OtpMsg.Tag.demonitorPTag:
                             // {DEMONITOR_P, FromPid, ToProc, Ref}
                             if (traceLevel >= OtpTrace.Type.ctrlThreshold)
