@@ -1379,7 +1379,7 @@ receive_loop_brk: ;
             System.String str = self.node();
             obuf.write2BE(str.Length + 7); // 7 bytes + nodename
             obuf.write1(AbstractNode.NTYPE_R6);
-            obuf.write2BE(dist);
+            obuf.write2BE((short)dist);
             obuf.write4BE(flags);
             //UPGRADE_NOTE: This code will be optimized in the future;
             byte[] tmpBytes;
@@ -1408,9 +1408,9 @@ receive_loop_brk: ;
             
             OtpOutputStream obuf = new OtpOutputStream();
             System.String str = self.node();
-            obuf.write2BE(str.Length + 11); // 11 bytes + nodename
+            obuf.write2BE((short)str.Length + 11); // 11 bytes + nodename
             obuf.write1(AbstractNode.NTYPE_R6);
-            obuf.write2BE(dist);
+            obuf.write2BE((short)dist);
             obuf.write4BE(flags);
             obuf.write4BE(challenge);
             //UPGRADE_NOTE: This code will be optimized in the future;

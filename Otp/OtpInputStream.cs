@@ -30,6 +30,7 @@ namespace Otp
         byte[] m_buf2;
         byte[] m_buf4;
         byte[] m_buf8;
+        private int m_Origin;
 
 		/*
 		* Create a stream from a buffer containing encoded Erlang terms.
@@ -47,41 +48,48 @@ namespace Otp
             m_buf2 = new byte[2];
             m_buf4 = new byte[4];
             m_buf8 = new byte[8];
+            m_Origin = offset;
 		}
+
+        public int BufferPosition
+        {
+            get { return m_Origin + (int)Position; }
+        }
+
+
+        ///*
+        //* Get the current position in the stream.
+        //*
+        //* @return the current position in the stream.
+        //**/
+        //public int getPos()
+        //{
+        //    return (int) base.Position;
+        //}
 		
-		/*
-		* Get the current position in the stream.
-		*
-		* @return the current position in the stream.
-		**/
-		public int getPos()
-		{
-			return (int) base.Position;
-		}
-		
-		/*
-		* Set the current position in the stream.
-		*
-		* @param pos the position to move to in the stream. If pos
-		* indicates a position beyond the end of the stream, the position
-		* is move to the end of the stream instead. If pos is negative, the
-		* position is moved to the beginning of the stream instead.
-		*
-		* @return the previous position in the stream.
-		**/
-		public int setPos(int pos)
-		{
-			int oldpos = (int) base.Position;
+        ///*
+        //* Set the current position in the stream.
+        //*
+        //* @param pos the position to move to in the stream. If pos
+        //* indicates a position beyond the end of the stream, the position
+        //* is move to the end of the stream instead. If pos is negative, the
+        //* position is moved to the beginning of the stream instead.
+        //*
+        //* @return the previous position in the stream.
+        //**/
+        //public int setPos(int pos)
+        //{
+        //    int oldpos = (int) base.Position;
 			
-			if (pos > (int) base.Length)
-				pos = (int) base.Length;
-			else if (pos < 0)
-				pos = 0;
+        //    if (pos > (int) base.Length)
+        //        pos = (int) base.Length;
+        //    else if (pos < 0)
+        //        pos = 0;
 			
-			base.Position = (System.Int64) pos;
+        //    base.Position = (System.Int64) pos;
 			
-			return oldpos;
-		}
+        //    return oldpos;
+        //}
 		
 		/*
 		* Read an array of bytes from the stream. The method reads at most
@@ -313,7 +321,7 @@ namespace Otp
 
             int len = this.read2BE();
             int n = len > OtpExternal.maxAtomLength ? OtpExternal.maxAtomLength : len;
-            string s = System.Text.Encoding.ASCII.GetString(base.GetBuffer(), (int)base.Position, len);
+            string s = System.Text.Encoding.ASCII.GetString(base.GetBuffer(), BufferPosition, len);
             base.Position += len;
             if (n != len)
                 s = s.Substring(0, n);
@@ -892,7 +900,7 @@ namespace Otp
 				
 				case OtpExternal.stringTag: 
 					len = this.read2BE();
-                    string s = System.Text.Encoding.ASCII.GetString(base.GetBuffer(), (int)base.Position, len);
+                    string s = System.Text.Encoding.ASCII.GetString(base.GetBuffer(), BufferPosition, len);
                     base.Position += len;
                     return s;
 

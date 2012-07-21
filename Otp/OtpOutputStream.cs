@@ -59,35 +59,13 @@ namespace Otp
         /*
         * Create a stream containing the serialized Erlang term.
         **/
-        public OtpOutputStream(Erlang.Object o):this(o, false, false) {}
+        public OtpOutputStream(Erlang.Object o):this(o, false) {}
 
         /*
         * Create a stream containing the serialized Erlang term.
         * Optionally include in the beginning Erlang protocol version byte.
         **/
-        public OtpOutputStream(Erlang.Object o, bool writeVersion)
-            : this(o, writeVersion, false) {}
-
-        /*
-        * Create a stream containing the serialized Erlang term.
-        * Optionally include in the beginning Erlang protocol version byte.
-        **/
-        public OtpOutputStream(Erlang.Object o, bool writeVersion, bool writePktSize)
-            : this()
-        {
-            if (!writePktSize)
-            {
-                encodeObject(o, writeVersion);
-                return;
-            }
-
-            write4BE(0); // make space for length data,
-                         // but final value is not yet known
-            encodeObject(o, writeVersion);
-            poke4BE(0, this._size - 4);
-        }
-
-        private void encodeObject(Erlang.Object o, bool writeVersion)
+        public OtpOutputStream(Erlang.Object o, bool writeVersion) : this()
         {
             if (writeVersion)
                 this.write(OtpExternal.versionTag);
@@ -112,54 +90,28 @@ namespace Otp
             return new OtpInputStream(buf, offset, _count - offset);
         }
         
-        public Erlang.Binary ToBinary()
-        {
-            byte[] tmp = new byte[_count];
-            Array.Copy(buf, 0, tmp, 0, _count);
-            return new Otp.Erlang.Binary(tmp);
-        }
-
         /*
         * Reset the stream so that it can be reused.
         **/
-        public virtual void reset()
+        public virtual void  reset()
         {
             _count = 0;
         }
 
-        /*
-        * Get internal buffer
-        **/
+    public Erlang.Binary ToBinary()
+    {
+      byte[] tmp = new byte[_count];
+      Array.Copy(buf, 0, tmp, 0, _count);
+      return new Otp.Erlang.Binary(tmp);
+    }
+
         public byte[] getBuffer() { return buf; }
-
-        /*
-        * Get the current capacity of the stream. As bytes are added the
-        * capacity of the stream is increased automatically, however this
-        * method returns the current size.
-        *
-        * @return the size of the internal buffer used by the stream.
-        **/
-        public int size()
-        {
-            return _size;
-        }
-
         /*
         * Get the current position in the stream.
         *
         * @return the current position in the stream.
         **/
-        public int getPos()
-        {
-            return _count;
-        }
-
-        /*
-        * Get the number of bytes in the stream.
-        *
-        * @return the number of bytes in the stream.
-        **/
-        public int count()
+        public virtual int getPos()
         {
             return _count;
         }
@@ -248,6 +200,28 @@ namespace Otp
         }
         
         /*
+        * Get the current capacity of the stream. As bytes are added the
+        * capacity of the stream is increased automatically, however this
+        * method returns the current size.
+        *
+        * @return the size of the internal buffer used by the stream.
+        **/
+        public virtual int size()
+        {
+            return _size;
+        }
+        
+        /*
+        * Get the number of bytes in the stream.
+        *
+        * @return the number of bytes in the stream.
+        **/
+        public virtual int count()
+        {
+            return _count;
+        }
+        
+        /*
         * Write the low two bytes of a value to the stream in big endian
         * order.
         *
@@ -324,7 +298,7 @@ namespace Otp
         * @param offset the position in the stream.
         * @param n the value to use.
         **/
-        public virtual void  poke4BE(int offset, long n)
+        public virtual void  poke4BE(int offset, int n)
         {
             if (offset < _count)
             {
@@ -358,69 +332,7 @@ namespace Otp
             }
             this.writeN(tmpBytes);
         }
-
-        public int encode_size(Erlang.Object o)
-        {
-            if (o is Erlang.Atom) return 1 + 2 + o.atomValue().Length;
-            else if (o is Erlang.Boolean) return 1 + 2 + (o.boolValue()
-                                                      ? Erlang.Boolean.s_true.atomValue().Length
-                                                      : Erlang.Boolean.s_false.atomValue().Length);
-            else if (o is Erlang.Binary) return 5 + o.binaryValue().Length;
-            else if (o is Erlang.Long)
-            {
-                long l = o.longValue();
-                if ((l & 0xff) == l) return 2;
-                else if ((l <= OtpExternal.erlMax) && (l >= OtpExternal.erlMin)) return 5;
-                return long_arity(l);
-            }
-            else if (o is Erlang.Byte) return 1 + 1;
-            else if (o is Erlang.Double) return 9;
-            else if (o is Erlang.String)
-            {
-                string l = o.stringValue();
-                if (l.Length == 0) return 1;
-                if (l.Length < 0xffff) return 2 + l.Length;
-                return 1 + 4 + 2 * l.Length;
-
-            }
-            else if (o is Erlang.List)
-            {
-                Erlang.List l = o.listValue();
-                if (l.arity() == 0)
-                    return 1;
-                int sz = 5;
-                for (int i = 0; i < l.arity(); i++)
-                    sz += encode_size(l[i]);
-                return sz;
-            }
-            else if (o is Erlang.Tuple)
-            {
-                Erlang.Tuple l = o.tupleValue();
-                int sz = 1 + (l.arity() < 0xff ? 1 : 4);
-                for (int i = 0; i < l.arity(); i++)
-                    sz += encode_size(l[i]);
-                return sz;
-            }
-            else if (o is Erlang.Pid)
-            {
-                Erlang.Pid p = o.pidValue();
-                return 1 + (1 + 2 + p.node().Length) + 4 + 4 + 1;
-            }
-            else if (o is Erlang.Ref)
-            {
-                Erlang.Ref p = o.refValue();
-                int[] ids = p.ids();
-                return 1 + (1 + 2 + p.node().Length) + 1 + 4 * ids.Length;
-            }
-            else if (o is Erlang.Port)
-            {
-                Erlang.Port p = o.portValue();
-                return 1 + (1 + 2 + p.node().Length) + 4 + 1;
-            }
-            else
-                throw new Erlang.Exception("Unknown encode size for object: " + o.ToString());
-        }
-
+        
         /*
         * Write an array of bytes to the stream as an Erlang binary.
         *
@@ -451,7 +363,7 @@ namespace Otp
         **/
         public virtual void  write_byte(byte b)
         {
-            this.write_long(b, false);
+            this.write_long(b);
         }
         
         /*
@@ -461,7 +373,7 @@ namespace Otp
         **/
         public virtual void  write_char(char c)
         {
-            this.write_long(c, false);
+            this.write_long(c);
         }
         
         /*
@@ -570,9 +482,7 @@ namespace Otp
         *
         * @param l the long to use.
         **/
-        public void write_long(long l) { write_long(l, l < 0); }
-
-        private void write_long(long l, bool isNegative)
+        public virtual void  write_long(long l)
         {
             if ((l & 0xff) == l)
             {
@@ -587,38 +497,31 @@ namespace Otp
             }
             else
             {
-                int  neg = isNegative ? 1 : 0;
-                ulong v  = (ulong)(isNegative ? -l : l);
-                byte arity = 0;
                 this.write1(OtpExternal.smallBigTag);
-                int arity_pos = _count;
-                this.write1(0);  // Fill in later
-                this.write1(neg); // sign
-                while (v != 0) {
-                    this.write1((byte)(v & 0xff));  // write lowest byte
-                    v >>= 8;                // shift unsigned
-                    arity++;
+                this.write1(4); // length
+                
+                // obs! little endian here
+                if (l < 0)
+                {
+                    this.write1(1); // sign
+                    this.write4LE(- l); // value
                 }
-                buf[arity_pos] = arity;
+                else
+                {
+                    this.write1(0); // sign
+                    this.write4LE(l); //value
+                }
             }
         }
-
-        static public int long_arity(long l)
-        {
-            ulong v = (ulong)(l < 0 ? -l : l);
-            int sz = 3; /* Type, arity and sign */
-            while (v != 0) { sz++; v >>= 8; }
-            return sz;
-        }
-
+        
         /*
         * Write a positive long to the stream.
         *
         * @param ul the long to use.
         **/
-        public virtual void  write_ulong(ulong ul)
+        public virtual void  write_ulong(long ul)
         {
-            this.write_long((long)ul, false);
+            this.write_long(ul);
         }
         
         /*
@@ -628,7 +531,7 @@ namespace Otp
         **/
         public virtual void  write_int(int i)
         {
-            this.write_long(i, i < 0);
+            this.write_long(i);
         }
         
         /*
@@ -636,9 +539,9 @@ namespace Otp
         *
         * @param ui the integer to use.
         **/
-        public virtual void  write_uint(uint ui)
+        public virtual void  write_uint(int ui)
         {
-            this.write_long(ui, false);
+            this.write_long(ui);
         }
         
         /*
@@ -648,7 +551,7 @@ namespace Otp
         **/
         public virtual void  write_short(short s)
         {
-            this.write_long(s, false);
+            this.write_long(s);
         }
         
         /*
@@ -656,9 +559,9 @@ namespace Otp
         *
         * @param s the short to use.
         **/
-        public virtual void write_ushort(ushort us)
+        public virtual void  write_ushort(short us)
         {
-            this.write_long(us, false);
+            this.write_long(us);
         }
         
         /*
@@ -837,24 +740,7 @@ namespace Otp
                     this.write_nil();
                     break;
                 
-                default:
-                    System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
-                    Byte[] bytebuf = encoding.GetBytes(s);
-                    if (bytebuf.Length < 0xffff)
-                    {
-                        this.write1(OtpExternal.stringTag);
-                        this.write2BE(len);
-                        this.writeN(bytebuf);
-                    }
-                    else
-                    {
-                        this.write_list_head(len);
-                        for (int i2 = 0; i2 < len; i2++)
-                            this.write_byte(bytebuf[i2]);
-                        this.write_nil();
-                    }
-
-                    /*
+                default: 
                     //UPGRADE_NOTE: This code will be optimized in the future;
                     byte[] tmpBytes;
                     int i;
@@ -868,17 +754,20 @@ namespace Otp
                         i++;
                     }
                     byte[] bytebuf = tmpBytes;
-
+                    
+                    /*switch to se if the length of
+                    the byte array is equal to the 
+                    length of the list */
                     if (bytebuf.Length == len)
                     {
-                        // Usual
+                        /*Usual */
                         this.write1(OtpExternal.stringTag);
                         this.write2BE(len);
                         this.writeN(bytebuf);
                     }
                     else
                     {
-                        // Unicode
+                        /*Unicode */
                         char[] charbuf = s.ToCharArray();
                         
                         this.write_list_head(len);
@@ -888,7 +777,6 @@ namespace Otp
                         
                         this.write_nil();
                     }
-                    */
                     break;
                 
             }
@@ -913,11 +801,6 @@ namespace Otp
         {
             // calls one of the above functions, depending on o
             o.encode(this);
-        }
-
-        static void write_any(ref byte[] buf, Erlang.Object o)
-        {
-            
         }
     }
 }
