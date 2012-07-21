@@ -914,10 +914,5 @@ namespace Otp
             // calls one of the above functions, depending on o
             o.encode(this);
         }
-
-        static void write_any(ref byte[] buf, Erlang.Object o)
-        {
-            
-        }
     }
 }
