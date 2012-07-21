@@ -154,27 +154,38 @@ namespace Otp.Erlang
 			return "#Bin<" + bin.Length + ">";
 		}
 
-    /// <summary>
-    /// Returns binary representation of the string encoded as &lt;&lt;...&gt;&gt;
-    /// </summary>
-    /// <returns></returns>
-    public string ToBinaryString()
-    {
-        System.Text.StringBuilder s = new System.Text.StringBuilder();
-        s.Append("<<");
-        if (bin.Length > 0) s.Append(bin[0]);
-        for (int i = 1; i < bin.Length; i++)
-            s.AppendFormat(",{0}", bin[i]);
-        s.Append(">>");
-        return s.ToString();
-    }
+        /// <summary>
+        /// Returns binary representation of the string encoded as &lt;&lt;...&gt;&gt;
+        /// </summary>
+        /// <returns></returns>
+        public string ToBinaryString()
+        {
+            return ToBinaryString(bin, 0, bin.Length);
+        }
 
-		/*
-		* Convert this binary to the equivalent Erlang external representation.
-		*
-		* @param buf an output stream to which the encoded binary should be
-		* written.
-		**/
+        /// <summary>
+        /// Returns binary representation of the string encoded as &lt;&lt;...&gt;&gt;
+        /// </summary>
+        /// <returns></returns>
+        static public string ToBinaryString(byte[] buf, int start, int count)
+        {
+            int n = count > buf.Length ? buf.Length : count;
+
+            System.Text.StringBuilder s = new System.Text.StringBuilder();
+            s.Append("<<");
+            if (n > 0) s.Append(buf[0]);
+            for (int i = 1; i < n; i++)
+                s.AppendFormat(",{0}", buf[i]);
+            s.Append(">>");
+            return s.ToString();
+        }
+        
+        /*
+        * Convert this binary to the equivalent Erlang external representation.
+        *
+        * @param buf an output stream to which the encoded binary should be
+        * written.
+        **/
 		public override void  encode(OtpOutputStream buf)
 		{
 			buf.write_binary(this.bin);
