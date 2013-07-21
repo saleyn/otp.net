@@ -5,6 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using Otp;
 using System.Collections.Concurrent;
+using KVP = System.Collections.Generic.KeyValuePair<int,Otp.Erlang.VarBind>;
 
 namespace Otp
 {
@@ -455,6 +456,38 @@ namespace Otp
                     return false;
                 }).ToList();
         }
+
+        [Test]
+        public void PatternMatchCollectionTest()
+        {
+
+            var pm = new Erlang.PatternMatcher();
+            var state = new KVP();
+
+            var IDs = new int[] {
+                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), stop}"),
+                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), status}"),
+                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), {status, B::atom()}}"),
+                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), {config, B::list()}}")
+            };
+
+            Assert.AreEqual(1,  pm.Match(Erlang.Object.Format("{10, stop}")));
+            Assert.AreEqual(10, state.Value["A"].intValue());
+
+            Assert.AreEqual(2,  pm.Match(Erlang.Object.Format("{11, status}")));
+            Assert.AreEqual(11, state.Value["A"].intValue());
+
+            Assert.AreEqual(3,  pm.Match(Erlang.Object.Format("{12, {status, ~w}}", new Erlang.Atom("a"))));
+            Assert.AreEqual(12, state.Value["A"].intValue());
+            Assert.AreEqual("a",state.Value["B"].atomValue().ToString());
+
+            Assert.AreEqual(4,  pm.Match(Erlang.Object.Format("{13, {config, ~w}}", new Erlang.List())));
+            Assert.AreEqual(13, state.Value["A"].intValue());
+            Assert.AreEqual(0,  state.Value["B"].listValue().Length);
+                                
+            Assert.AreEqual(-1, pm.Match(Erlang.Object.Format("{10, exit}")));
+        }
+
 
     }
 }

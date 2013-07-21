@@ -215,25 +215,27 @@ namespace Otp.Erlang
             int start = pos;
             State rc = State.ERL_FMT_ERR;
 
-            pos = skip_null_chars(fmt, pos);
-            switch (fmt[pos++]) {
-                case '}':
-                    rc = State.ERL_OK;
-                    break;
+            if (pos < fmt.Length)
+            {
+                pos = skip_null_chars(fmt, pos);
+                switch (fmt[pos++]) {
+                    case '}':
+                        rc = State.ERL_OK;
+                        break;
 
-                case ',':
-                    rc = ptuple(fmt, ref pos, ref items, ref argc, args);
-                    break;
+                    case ',':
+                        rc = ptuple(fmt, ref pos, ref items, ref argc, args);
+                        break;
 
-                default: {
-                    --pos;
-                    Erlang.Object obj = create(fmt, ref pos, ref argc, args);
-                    items.Add(obj);
-                    rc = ptuple(fmt, ref pos, ref items, ref argc, args);
-                    break;
+                    default: {
+                        --pos;
+                        Erlang.Object obj = create(fmt, ref pos, ref argc, args);
+                        items.Add(obj);
+                        rc = ptuple(fmt, ref pos, ref items, ref argc, args);
+                        break;
+                    }
                 }
             }
-
             return rc;
         }
 
@@ -242,40 +244,42 @@ namespace Otp.Erlang
         {
             State rc = State.ERL_FMT_ERR;
 
-            pos = skip_null_chars(fmt, pos);
+            if (pos < fmt.Length)
+            {
+                pos = skip_null_chars(fmt, pos);
 
-            switch (fmt[pos++]) {
-                case ']':
-                    rc = State.ERL_OK;
-                    break;
+                switch (fmt[pos++]) {
+                    case ']':
+                        rc = State.ERL_OK;
+                        break;
 
-                case ',':
-                    rc = plist(fmt, ref pos, ref items, ref argc, args);
-                    break;
+                    case ',':
+                        rc = plist(fmt, ref pos, ref items, ref argc, args);
+                        break;
 
-                case '|':
-                    pos = skip_null_chars(fmt, pos);
-                    if (char.IsUpper(fmt[pos]) || fmt[pos] == '_') {
-                        TermType t;
-                        string s = pvariable(fmt, ref pos, out t);
-                        items.Add(new Erlang.Var(s, t));
+                    case '|':
                         pos = skip_null_chars(fmt, pos);
-                        if (fmt[pos] == ']')
-                            rc = State.ERL_OK;
+                        if (char.IsUpper(fmt[pos]) || fmt[pos] == '_') {
+                            TermType t;
+                            string s = pvariable(fmt, ref pos, out t);
+                            items.Add(new Erlang.Var(s, t));
+                            pos = skip_null_chars(fmt, pos);
+                            if (fmt[pos] == ']')
+                                rc = State.ERL_OK;
+                            break;
+                        }
+                        break;
+
+                    default: {
+                        --pos;
+                        Erlang.Object obj = create(fmt, ref pos, ref argc, args);
+                        items.Add(obj);
+                        rc = plist(fmt, ref pos, ref items, ref argc, args);
                         break;
                     }
-                    break;
 
-                default: {
-                    --pos;
-                    Erlang.Object obj = create(fmt, ref pos, ref argc, args);
-                    items.Add(obj);
-                    rc = plist(fmt, ref pos, ref items, ref argc, args);
-                    break;
                 }
-
             }
-
             return rc;
         }
 
