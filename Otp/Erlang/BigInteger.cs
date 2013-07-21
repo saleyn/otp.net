@@ -482,6 +482,7 @@ public class BigInteger
                 return (new BigInteger((ulong)value));
         }
 
+        //public override Type Type { get { return GetType(); } }
 
         //***********************************************************************
         // Overloading of addition operator

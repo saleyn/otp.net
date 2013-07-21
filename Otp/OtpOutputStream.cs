@@ -84,7 +84,7 @@ namespace Otp
             write4BE(0); // make space for length data,
                          // but final value is not yet known
             encodeObject(o, writeVersion);
-            poke4BE(0, this._size - 4);
+            poke4BE(0, this._count - 4);
         }
 
         private void encodeObject(Erlang.Object o, bool writeVersion)

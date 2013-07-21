@@ -92,6 +92,12 @@ namespace Otp.Erlang
 		}
 	}
 
+    public class InvalidValueType : ErlangException
+    {
+        public InvalidValueType() : base() {}
+        public InvalidValueType(string msg) : base(msg) {}
+    }
+
     public class FormatException : ErlangException
     {
         public FormatException() : base() {}

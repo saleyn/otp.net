@@ -58,7 +58,11 @@ namespace Otp.Erlang
 			val = buf.read_long();
 		}
 		
-		/*
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Int; } }
+
+        /*
 		* Get this number as a long.
 		*
 		* @return the value of this number, as a long.

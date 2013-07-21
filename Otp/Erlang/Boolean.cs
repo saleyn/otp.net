@@ -55,6 +55,9 @@ namespace Otp.Erlang
 			this.value = buf.read_boolean();
 		}
 		
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Boolean; } }
         
         /*
         * The boolean value of this instance.

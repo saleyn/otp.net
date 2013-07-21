@@ -51,5 +51,9 @@ namespace Otp.Erlang
 			
 			int j = intValue();
 		}
+
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Int; } }
 	}
 }

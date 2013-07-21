@@ -54,7 +54,11 @@ namespace Otp.Erlang
             //System.Diagnostics.Debug.WriteLine("Double: " + this.d );
 		}
 		
-		/*
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Double; } }
+
+        /*
 		* Get the value, as a double.
 		*
 		* @return the value of this object, as a double.

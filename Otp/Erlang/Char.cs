@@ -48,8 +48,16 @@ namespace Otp.Erlang
 		**/
 		public Char(OtpInputStream buf):base(buf)
 		{
-			
 			char i = charValue();
 		}
+
+        public override string ToString()
+        {
+ 	         return string.Format("${0}", charValue());
+        }
+
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Char; } }
 	}
 }

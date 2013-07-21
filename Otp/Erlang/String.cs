@@ -49,6 +49,10 @@ namespace Otp.Erlang
             str = buf.read_string();
         }
 
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.String; } }
+
         /*
         * Get the actual string contained in this object.
         *

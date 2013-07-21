@@ -119,6 +119,10 @@ namespace Otp.Erlang
 			this._ids[0] &= 0x3ffff; // only 18 significant bits in first number
 		}
 		
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Ref; } }
+
 		/*
 		* Get the id number from the ref. Old style refs have only one id
 		* number. If this is a new style ref, the first id number is returned.

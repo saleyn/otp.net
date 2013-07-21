@@ -1,6 +1,18 @@
 Release notes
 -------------
 
+V 0.9, July 2013 / Serge Aleynikov
+----------------------------------
+- Added type constraints to pattern matching, and object formatting:
+    var pat = Erlang.Object.Format("{A::int(), B::float(), C::string(), D::atom()}");
+    var obj = Erlang.Object.Format("{10, 20.0, "abc", echo}");
+
+    var binding = new Erlang.VarBind();
+    if (pat.match(obj, binding))
+        Console.WriteLine(binding.ToString());
+- Removed dependency on Microsoft's testing framework and replaced it with NUnit
+- Added Erlang.Object.TermType enum
+
 V 0.7, February 2011 / Serge Aleynikov
 --------------------------------------
 - Added pattern matching feature:

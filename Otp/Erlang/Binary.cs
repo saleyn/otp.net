@@ -73,7 +73,10 @@ namespace Otp.Erlang
 			}
 		}
 		
-		private static byte[] toByteArray(System.Object o)
+        public override Type Type { get { return GetType(); } }
+        public override TermType TermType { get { return TermType.Binary; } }
+
+        private static byte[] toByteArray(System.Object o)
 		{
 			
 			if (o == null)

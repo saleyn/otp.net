@@ -18,7 +18,26 @@
 namespace Otp.Erlang
 {
 	using System;
-	
+
+    public enum TermType
+    {
+        Object,
+        Atom,
+        Binary,
+        Boolean,
+        Byte,
+        Char,
+        Double,
+        Int,
+        List,
+        Pid,
+        Port,
+        Ref,
+        String,
+        Tuple,
+        Var
+    }
+
 	/*
 	* Base class of the Erlang data type classes. This class is used to
 	* represent an arbitrary Erlang term.
@@ -35,9 +54,7 @@ namespace Otp.Erlang
 
         public T Cast<T>() where T: Erlang.Object
         {
-            if (!(this is T))
-                throw new CastException();
-            return (T)(this);
+            return (T)this;
         }
 
 		/*
@@ -103,6 +120,10 @@ namespace Otp.Erlang
 			}
 		}
 
+        public abstract Type Type { get; }
+        public abstract TermType TermType { get; }
+
+
         public virtual long     longValue()     { return this.Cast<Long>().longValue(); }
         public virtual int      intValue()      { return this.Cast<Long>().intValue(); }
         public virtual short    shortValue()    { return this.Cast<Long>().shortValue(); }
@@ -117,5 +138,21 @@ namespace Otp.Erlang
         public Ref              refValue()      { return this.Cast<Ref>(); }
         public Tuple            tupleValue()    { return this.Cast<Tuple>(); }
         public List             listValue()     { return this.Cast<List>(); }
-	}
+
+        public Long     AsLong()     { return this.Cast<Long>(); }
+        public Int      AsInt()      { return this.Cast<Int>(); }
+        public Short    AsShort()    { return this.Cast<Short>(); }
+        public Double   AsDouble()   { return this.Cast<Double>(); }
+        public Atom     AsAtom()     { return this.Cast<Atom>(); }
+        public String   AsString()   { return this.Cast<String>(); }
+        public Char     AsChar()     { return this.Cast<Char>(); }
+        public Boolean  AsBool()     { return this.Cast<Boolean>(); }
+        public Binary   AsBinary()   { return this.Cast<Binary>(); }
+        public Pid      AsPid()      { return this.Cast<Pid>(); }
+        public Port     AsPort()     { return this.Cast<Port>(); }
+        public Ref      AsRef()      { return this.Cast<Ref>(); }
+        public Tuple    AsTuple()    { return this.Cast<Tuple>(); }
+        public List     AsList()     { return this.Cast<List>(); }
+        public Var      AsVar()      { return this.Cast<Var>(); }
+    }
 }

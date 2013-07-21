@@ -12,3 +12,6 @@ UpgradeLog.XML
 *.*.suo
 *.suo
 /Otp/Otp.csproj.user
+/UnitTest/*.user
+
+/Otp/TestResults

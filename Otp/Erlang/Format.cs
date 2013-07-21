@@ -36,7 +36,7 @@ namespace Otp.Erlang
             return pos;
         }
 
-        private static string pvariable(char[] fmt, ref int pos)
+        private static string pvariable(char[] fmt, ref int pos, out TermType type)
         {
             int start = pos;
 
@@ -48,7 +48,81 @@ namespace Otp.Erlang
                 else
                     break;
             }
-            int len = pos - start;
+            
+            int i = pos;
+            int end = pos;
+
+            if (fmt.Length > i + 1 && fmt[i] == ':' && fmt[i + 1] == ':')
+            {
+                i = pos + 2;
+                int tps = i;
+
+                for (char c = fmt[i]; char.IsLetter(c) && i < fmt.Length - 1; c = fmt[++i]) ;
+
+                if (fmt[i] == '(' && i < fmt.Length - 1 && fmt[i + 1] == ')')
+                {
+                    pos = i + 2;
+
+                    string tp = new string(fmt, tps, i - tps);
+
+                    switch (tp)
+                    {
+                        case "int":
+                        case "integer":
+                            type = TermType.Int;
+                            break;
+                        case "str":
+                        case "string":
+                            type = TermType.String;
+                            break;
+                        case "atom":
+                            type = TermType.Atom;
+                            break;
+                        case "float":
+                        case "double":
+                            type = TermType.Double;
+                            break;
+                        case "binary":
+                            type = TermType.Binary;
+                            break;
+                        case "bool":
+                        case "boolean":
+                            type = TermType.Boolean;
+                            break;
+                        case "byte":
+                            type = TermType.Byte;
+                            break;
+                        case "char":
+                            type = TermType.Char;
+                            break;
+                        case "list":
+                            type = TermType.List;
+                            break;
+                        case "tuple":
+                            type = TermType.Tuple;
+                            break;
+                        case "pid":
+                            type = TermType.Pid;
+                            break;
+                        case "ref":
+                        case "reference":
+                            type = TermType.Ref;
+                            break;
+                        case "port":
+                            type = TermType.Port;
+                            break;
+                        default:
+                            throw new ArgumentException("Type '" + tps + "' is not supported!");
+                    }
+                }
+                else
+                    throw new ArgumentException("Invalid variable type specification: " +
+                        new string(fmt, start, pos - start));
+            }
+            else
+                type = TermType.Object;
+
+            int len = end - start;
             return new string(fmt, start, len);
         }
 
@@ -182,8 +256,9 @@ namespace Otp.Erlang
                 case '|':
                     pos = skip_null_chars(fmt, pos);
                     if (char.IsUpper(fmt[pos]) || fmt[pos] == '_') {
-                        string s = pvariable(fmt, ref pos);
-                        items.Add(new Erlang.Var(s));
+                        TermType t;
+                        string s = pvariable(fmt, ref pos, out t);
+                        items.Add(new Erlang.Var(s, t));
                         pos = skip_null_chars(fmt, pos);
                         if (fmt[pos] == ']')
                             rc = State.ERL_OK;
@@ -291,8 +366,9 @@ namespace Otp.Erlang
                         string s = patom(fmt, ref pos);
                         result = createAtom(s);
                     } else if (char.IsUpper(c) || c == '_') {
-                        string s = pvariable(fmt, ref pos);
-                        result = new Erlang.Var(s);
+                        TermType t;
+                        string s = pvariable(fmt, ref pos, out t);
+                        result = new Erlang.Var(s, t);
                     } else if (char.IsDigit(c) || c == '-') {    /* integer/float ? */
                         string s = pdigit(fmt, ref pos);
                         if (s.IndexOf('.') < 0)

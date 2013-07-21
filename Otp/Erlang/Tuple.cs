@@ -130,6 +130,7 @@ namespace Otp.Erlang
                         else if (o is short) this.elems[i] = new Short((short)o);
                         else if (o is ushort) this.elems[i] = new UShort((short)o);
                         else if (o is bool) this.elems[i] = new Boolean((bool)o);
+                        else if (o is char) this.elems[i] = new Char((char)o);
                         else
                             throw new System.ArgumentException("Unknown type of element[" + i + "]: " + o.GetType().ToString());
                     }
@@ -159,6 +160,10 @@ namespace Otp.Erlang
 				}
 			}
 		}
+
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Tuple; } }
 		
 		/*
 		* Get the arity of the tuple.

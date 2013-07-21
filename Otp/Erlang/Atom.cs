@@ -69,8 +69,12 @@ namespace Otp.Erlang
 		{
 			this.atom = buf.read_atom();
 		}
-		
-		/*
+
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Atom; } }
+
+        /*
 		* Get the actual string contained in this object.
 		* 
 		* @return the raw string contained in this object, without regard

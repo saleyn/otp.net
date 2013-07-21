@@ -51,5 +51,9 @@ namespace Otp.Erlang
 			
 			sbyte i = byteValue();
 		}
+
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Byte; } }
 	}
 }

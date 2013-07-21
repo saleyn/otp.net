@@ -25,28 +25,45 @@ namespace Otp.Erlang
     [Serializable]
     public class Var : Erlang.Object
     {
+        private static readonly string s_any = "_";
+
         private string m_var;
+        private TermType m_termType;
 
         /// <summary>
         /// Create an anonymous variable.
         /// </summary>
-        public Var()
-        {
-            this.m_var = s_any;
-        }
+        public Var() : this(s_any) {}
 
         /// <summary>
         /// Create an Erlang named variable
         /// </summary>
         /// <param name="name">Variable name</param>
-        public Var(string name)
+        public Var(string name) : this(name, TermType.Object) {}
+
+        /// <summary>
+        /// Create an Erlang typed named variable
+        /// </summary>
+        /// <param name="name">Variable name</param>
+        public Var(string name, TermType type)
         {
             this.m_var = name;
+            this.m_termType = type;
         }
-
-        private const string s_any = "_";
-
+        
         public static string Any { get { return s_any; } }
+
+        /// <summary>
+        /// Returns type of this class
+        /// </summary>
+        public override Type Type { get { return GetType(); } }
+        
+        public override TermType TermType { get { return TermType.Var; } }
+
+        /// <summary>
+        /// Returns type of value stored in this variable
+        /// </summary>
+        public TermType VarTermType { get { return m_termType; } }
 
         public bool isAny() { return m_var == s_any; }
         /*
@@ -71,7 +88,28 @@ namespace Otp.Erlang
         **/
         public override string ToString()
         {
-            return "\"" + m_var + "\"";
+            string tp;
+            switch (m_termType)
+            {
+                case Erlang.TermType.Atom:      tp = "::atom()"; break;
+                case Erlang.TermType.Binary:    tp = "::binary()"; break;
+                case Erlang.TermType.Boolean:   tp = "::bool()"; break;
+                case Erlang.TermType.Byte:      tp = "::byte()"; break;
+                case Erlang.TermType.Char:      tp = "::char()"; break;
+                case Erlang.TermType.Double:    tp = "::double()"; break;
+                case Erlang.TermType.Int:       tp = "::int()"; break;
+                case Erlang.TermType.List:      tp = "::list()"; break;
+                case Erlang.TermType.Pid:       tp = "::pid()"; break;
+                case Erlang.TermType.Port:      tp = "::port()"; break;
+                case Erlang.TermType.Ref:       tp = "::ref()"; break;
+                case Erlang.TermType.String:    tp = "::string()"; break;
+                case Erlang.TermType.Tuple:     tp = "::tuple()"; break;
+                case Erlang.TermType.Var:       tp = "::var()"; break;
+                default: tp = string.Empty; break;
+            }
+            return tp == string.Empty
+                ? string.Format("\"{0}\"", m_var)
+                : string.Format("{0}{1}", m_var, tp);
         }
 
         public override bool subst(ref Erlang.Object obj, Erlang.VarBind binding)
@@ -81,6 +119,10 @@ namespace Otp.Erlang
             Erlang.Object term = binding[m_var];
             if (term == null)
                 throw new UnboundVarException("Variable " + m_var + " not bound!");
+            if (!checkType(term))
+                throw new InvalidValueType(
+                    string.Format("Invalid variable {0} value type (got={1}, expected={2})",
+                        m_var, obj.Type, m_termType));
             obj = term;
             return true;
         }
@@ -91,7 +133,9 @@ namespace Otp.Erlang
                 return false;
             Erlang.Object value = binding.find(m_var);
             if (value != null)
-                return value.match(pattern, binding);
+                return checkType(value) ? value.match(pattern, binding) : false;
+            else if (!checkType(pattern))
+                return false;
             Erlang.Object term = null;
             binding[m_var] = pattern.subst(ref term, binding) ? term : pattern;
             return true;
@@ -127,6 +171,12 @@ namespace Otp.Erlang
         public override int GetHashCode()
         {
             return 1;
+        }
+
+        private bool checkType(Erlang.Object value)
+        {
+            var vt = value.TermType;
+            return m_termType == TermType.Object || vt == m_termType;
         }
     }
 }

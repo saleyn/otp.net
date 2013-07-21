@@ -90,7 +90,11 @@ namespace Otp.Erlang
 			this._creation = creation & 0x03; // 2 bits
 		}
 		
-		/*
+        public override Type Type { get { return GetType(); } }
+
+        public override TermType TermType { get { return TermType.Pid; } }
+
+        /*
 		* Get the serial number from the PID.
 		*
 		* @return the serial number from the PID.
