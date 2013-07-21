@@ -5,7 +5,7 @@ using Otp;
 
 namespace Otp
 {
-    class Test1
+    class Test
     {
         private static void OnReadWrite(AbstractConnection con, AbstractConnection.Operation op,
             long lastBytes, long totalBytes, long totalMsgs)

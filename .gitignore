@@ -3,15 +3,12 @@ Otp/bin
 Otp/obj
 OtpTest/bin
 OtpTest/obj
-OtpTest1/bin
-OtpTest1/obj
 UnitTest/bin
 UnitTest/obj
-UpgradeLog.XML
+UpgradeLog.*
 *.testrunconfig
 *.*.suo
 *.suo
-/Otp/Otp.csproj.user
-/UnitTest/*.user
+*.user
 
 /Otp/TestResults
