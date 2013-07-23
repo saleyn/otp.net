@@ -19,6 +19,8 @@
 namespace Otp.Erlang
 {
 	using System;
+    using System.Collections;
+    using System.Collections.Generic;
 	
 	/*
 	* Provides a C# representation of Erlang tuples. Tuples are created
@@ -29,7 +31,7 @@ namespace Otp.Erlang
 	* individually by using the appropriate index.
 	**/
 	[Serializable]
-    public class Tuple:Erlang.Object
+    public class Tuple:Erlang.Object, IEnumerable<Object>
 	{
 		private Object[] elems = null;
 		
@@ -106,7 +108,7 @@ namespace Otp.Erlang
 		* @exception C#.lang.IllegalArgumentException if the array is
 		* empty (null) or contains null elements.
 		**/
-		public Tuple(params System.Object[] elems)
+		public Tuple(params object[] elems)
 		{
 			if (elems == null)
 				elems = new Object[] {};
@@ -119,7 +121,7 @@ namespace Otp.Erlang
 						throw new System.ArgumentException("Tuple element cannot be null (element" + i + ")");
 					else
                     {
-                        System.Object o = elems[i];
+                        object o = elems[i];
                         if (o is int) this.elems[i] = new Int((int)o);
                         else if (o is string) this.elems[i] = new String((string)o);
                         else if (o is float) this.elems[i] = new Double((float)o);
@@ -335,5 +337,15 @@ namespace Otp.Erlang
                     return false;
             return true;
         }
-	}
+
+        IEnumerator<Object> IEnumerable<Object>.GetEnumerator()
+        {
+            return ((IEnumerable<Object>)elems).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return elems.GetEnumerator();
+        }
+    }
 }

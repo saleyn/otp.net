@@ -287,40 +287,48 @@ namespace Otp.Erlang
             ref System.Collections.Generic.List<Erlang.Object> items, ref int argc, params object[] args)
         {
             pos = skip_null_chars(fmt, pos);
-            if (fmt[pos++] != 'w')
-                return State.ERL_FMT_ERR;
-            object o = args[argc++];
-            Type to = o.GetType();
 
-            // Native types
-            if (to == typeof(int))
-                items.Add(new Erlang.Long((int)o));
-            else if (to == typeof(long))
-                items.Add(new Erlang.Long((long)o));
-            else if (to == typeof(double))
-                items.Add(new Erlang.Double((double)o));
-            else if (to == typeof(string))
-                items.Add(new Erlang.String((string)o));
-            else if (to == typeof(bool))
-                items.Add(new Erlang.Boolean((bool)o));
-            else if (to == typeof(char))
-                items.Add(new Erlang.Char((char)o));
-            // Erlang terms
-            else if (to == typeof(Erlang.Object))
-                items.Add(o as Erlang.Object);
-            /*
-            else if (to == typeof(Erlang.Pid))
-                items.Add(o as Erlang.Pid);
-            else if (to == typeof(Erlang.Atom))
-                items.Add(o as Erlang.Atom);
-            else if (to = typeof(Erlang.Binary))
-                items.Add(o as Erlang.Binary)
-            */
-            else if (o is Erlang.Object)
-                items.Add(o as Erlang.Object);
-            else
-                throw new FormatException(
-                    string.Format("Unknown type of argument #{0}: {1}", argc - 1, to.ToString()));
+            char c = fmt[pos++];
+
+            if (args.Length < argc+1)
+                throw new FormatException(string.Format("Missing argument for argument #{0}: ~{1}", argc, c));
+
+            object o = args[argc++];
+
+            switch (c)
+            {
+                case 'i':
+                case 'd': items.Add(new Erlang.Long(o is int ? (int)o : (long)o)); break;
+                case 'f': items.Add(new Erlang.Double((double)o));  break;
+                case 's': items.Add(new Erlang.String((string)o));  break;
+                case 'b': items.Add(new Erlang.Boolean((bool)o));   break;
+                case 'c': items.Add(new Erlang.Char((char)o));      break;
+                case 'w':
+                    Type to = o.GetType();
+
+                    // Native types
+                    if (to == typeof(int))
+                        items.Add(new Erlang.Long((int)o));
+                    else if (to == typeof(long))
+                        items.Add(new Erlang.Long((long)o));
+                    else if (to == typeof(double))
+                        items.Add(new Erlang.Double((double)o));
+                    else if (to == typeof(string))
+                        items.Add(new Erlang.String((string)o));
+                    else if (to == typeof(bool))
+                        items.Add(new Erlang.Boolean((bool)o));
+                    else if (to == typeof(char))
+                        items.Add(new Erlang.Char((char)o));
+                    // Erlang terms
+                    else if (typeof(Erlang.Object).IsAssignableFrom(o.GetType()))
+                        items.Add(o as Erlang.Object);
+                    else
+                        throw new FormatException(
+                            string.Format("Unknown type of argument #{0}: {1}", argc-1, to.ToString()));
+                    break;
+                default:
+                    throw new FormatException(string.Format("Unsupported type ~{0} for argument #{1}", c, argc-1));
+            }
             return State.ERL_OK;
         }
 

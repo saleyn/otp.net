@@ -19,6 +19,8 @@
 namespace Otp.Erlang
 {
 	using System;
+    using System.Collections;
+    using System.Collections.Generic;
 	
 	/*
 	* Provides a C# representation of Erlang lists. Lists are created
@@ -27,7 +29,7 @@ namespace Otp.Erlang
 	* <p> The arity of the list is the number of elements it contains.
 	**/
 	[Serializable]
-    public class List:Erlang.Object
+    public class List:Erlang.Object, IEnumerable<Object>
 	{
 		private Object[] elems = null;
 		
@@ -98,7 +100,7 @@ namespace Otp.Erlang
         *
         * @param elems the array of terms from which to create the list.
         **/
-        public List(params System.Object[] elems)
+        public List(params object[] elems)
         {
             if ((elems != null) && (elems.Length > 0))
             {
@@ -106,12 +108,12 @@ namespace Otp.Erlang
 
                 for (int i=0; i < elems.Length; i++) 
                 {
-                    System.Object o = elems[i];
+                    object o = elems[i];
                     if (o is int) this.elems[i] = new Int((int)o);
                     else if (o is string) this.elems[i] = new String((string)o);
                     else if (o is float) this.elems[i] = new Double((float)o);
                     else if (o is double) this.elems[i] = new Double((double)o);
-                    else if (o is Erlang.Object) this.elems[i] = (o as Erlang.Object);
+                    else if (o is Erlang.Object) this.elems[i] = (Erlang.Object)o;
                     //else if (o is BigInteger) this.elems[i] = (BigInteger)o;
                     else if (o is uint) this.elems[i] = new UInt((int)o);
                     else if (o is short) this.elems[i] = new Short((short)o);
@@ -343,6 +345,16 @@ namespace Otp.Erlang
                 if (!elems[i].match(tup[i], binding))
                     return false;
             return true;
+        }
+
+        IEnumerator<Object> IEnumerable<Object>.GetEnumerator()
+        {
+            return ((IEnumerable<Object>)elems).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return elems.GetEnumerator();
         }
     }
 }

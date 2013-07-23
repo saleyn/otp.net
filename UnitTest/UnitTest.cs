@@ -462,11 +462,12 @@ namespace Otp
         {
             var state = new KVP();
 
-            var pm = new Erlang.PatternMatcher {
-                { 0, (_ctx, p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), stop}"               },
-                {          (p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), status}"             },
-                { 0, (_ctx, p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), {status, B::atom()}}"},
-                {          (p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), {config, B::list()}}"}
+            var pm = new Erlang.PatternMatcher
+            {
+                { 0, "{A::integer(), stop}"               , (_ctx, p, t, b, _args) => state = new KVP(p, b) },
+                {    "{A::integer(), status}"             ,       (p, t, b, _args) => state = new KVP(p, b) },
+                { 1, "{A::integer(), {status, B::atom()}}", (_ctx, p, t, b, _args) => state = new KVP(p, b) },
+                {    "{A::integer(), {config, B::list()}}",       (p, t, b, _args) => state = new KVP(p, b) }
             };
 
             Assert.AreEqual(1,  pm.Match(Erlang.Object.Format("{10, stop}")));
@@ -485,7 +486,7 @@ namespace Otp
                                 
             Assert.AreEqual(-1, pm.Match(Erlang.Object.Format("{10, exit}")));
 
-            var pts = pm.PatternsToTerm.ToString();
+            var pts = pm.PatternsToString;
 
             Assert.AreEqual(
                 "[{A::int(),stop},{A::int(),status},{A::int(),{status,B::atom()}},{A::int(),{config,B::list()}}]",

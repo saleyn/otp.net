@@ -61,38 +61,22 @@ namespace Otp.Erlang
             /// <summary>
             /// Add a matching pattern to the collection
             /// </summary>
-            /// <param name="action">Action to invoke on successful match</param>
             /// <param name="pattern">Pattern to compile</param>
-            /// <param name="args">Arguments used in the pattern</param>
+            /// <param name="action">Action to invoke on successful match</param>
             /// <returns>ID of the newly added pattern</returns>
-            public int Add(PatternMatchAction action, string pattern, params object[] args)
+            public int Add(string pattern, PatternMatchAction action)
             {
-                return Add(action, ErlObject.Format(pattern, args));
+                return Add(ErlObject.Format(pattern), action);
             }
 
             /// <summary>
             /// Add a matching pattern to the collection
             /// </summary>
-            /// <param name="action">Action to invoke on successful match</param>
             /// <param name="pattern">Pattern to compile</param>
+            /// <param name="action">Action to invoke on successful match</param>
             /// <param name="args">Arguments used in the pattern</param>
             /// <returns>ID of the newly added pattern</returns>
-            //public int Add(PatternMatchAction action, )
-            //{
-            //    int id = ++m_lastID;
-            //    var pt = new Pattern(id, (p, t, b, args) => action(context, p, t.Cast<TErlTerm>(), b, args), pattern);
-            //    m_patterns.Add(pt);
-            //    return id;
-            //}
-
-            /// <summary>
-            /// Add a matching pattern to the collection
-            /// </summary>
-            /// <param name="action">Action to invoke on successful match</param>
-            /// <param name="pattern">Pattern to compile</param>
-            /// <param name="args">Arguments used in the pattern</param>
-            /// <returns>ID of the newly added pattern</returns>
-            public int Add<TErlTerm>(PatternMatchAction action, TErlTerm pattern) where TErlTerm : ErlObject
+            public int Add<TErlTerm>(TErlTerm pattern, PatternMatchAction action) where TErlTerm : ErlObject
             {
                 int id = ++m_lastID;
                 var pt = new Pattern(id, (p, t, b, args) => action(p, t.Cast<TErlTerm>(), b, args), pattern);
@@ -105,13 +89,12 @@ namespace Otp.Erlang
             /// </summary>
             /// <typeparam name="TContext">Type of context passed to action</typeparam>
             /// <param name="context">Context passed to action</param>
-            /// <param name="action">Action to invoke on successful match</param>
             /// <param name="pattern">Pattern to compile</param>
-            /// <param name="args">Arguments used in the pattern</param>
+            /// <param name="action">Action to invoke on successful match</param>
             /// <returns>ID of the newly added pattern</returns>
-            public int Add<TContext>(TContext context, PatternMatchAction<TContext> action, string pattern, params object[] args)
+            public int Add<TContext>(TContext context, string pattern, PatternMatchAction<TContext> action)
             {
-                return Add(context, action, ErlObject.Format(pattern, args));
+                return Add(context, ErlObject.Format(pattern), action);
             }
 
             /// <summary>
@@ -119,15 +102,14 @@ namespace Otp.Erlang
             /// </summary>
             /// <typeparam name="TContext">Type of context passed to action</typeparam>
             /// <param name="context">Context passed to action</param>
-            /// <param name="action">Action to invoke on successful match</param>
             /// <param name="pattern">Pattern to compile</param>
-            /// <param name="args">Arguments used in the pattern</param>
+            /// <param name="action">Action to invoke on successful match</param>
             /// <returns>ID of the newly added pattern</returns>
-            public int Add<TContext, TErlTerm>(TContext context,
-                PatternMatchAction<TContext, TErlTerm> action, string pattern, params object[] args
+            public int Add<TContext, TErlTerm>(TContext context, string pattern,
+                PatternMatchAction<TContext, TErlTerm> action
             ) where TErlTerm : ErlObject
             {
-                return Add(context, action, ErlObject.Format(pattern, args).Cast<TErlTerm>());
+                return Add(context, ErlObject.Format(pattern).Cast<TErlTerm>(), action);
             }
 
             /// <summary>
@@ -138,7 +120,7 @@ namespace Otp.Erlang
             /// <param name="action">Action to invoke on successful match</param>
             /// <param name="pattern">Compiled pattern containing variables to match</param>
             /// <returns>ID of the newly added pattern</returns>
-            public int Add<TContext>(TContext context, PatternMatchAction<TContext> action, ErlObject pattern)
+            public int Add<TContext>(TContext context, ErlObject pattern, PatternMatchAction<TContext> action)
             {
                 int id = ++m_lastID;
                 var pt = new Pattern(id, (p, t, b, args) => action(context, p, t, b, args), pattern);
@@ -156,8 +138,8 @@ namespace Otp.Erlang
             /// <returns>ID of the newly added pattern</returns>
             public int Add<TContext, TErlTerm>(
                 TContext context,
-                PatternMatchAction<TContext, TErlTerm> action,
-                TErlTerm pattern) where TErlTerm : ErlObject
+                TErlTerm pattern,
+                PatternMatchAction<TContext, TErlTerm> action) where TErlTerm : ErlObject
             {
                 int id = ++m_lastID;
                 var pt = new Pattern(id, (p, t, b, args) => action(context, p, t.Cast<TErlTerm>(), b, args), pattern);
@@ -208,9 +190,9 @@ namespace Otp.Erlang
                 m_patterns.Clear();
             }
 
-            public ErlObject PatternsToTerm
+            public string PatternsToString
             {
-                get { return new Erlang.List(m_patterns.Select(p => p.Term).ToArray()); }
+                get { return (new Erlang.List(m_patterns.Select(p => p.Term).ToArray())).ToString(); }
             }
 
             IEnumerator IEnumerable.GetEnumerator()
