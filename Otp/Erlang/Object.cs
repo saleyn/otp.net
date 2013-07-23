@@ -52,6 +52,11 @@ namespace Otp.Erlang
             return Formatter.create(fmt.ToCharArray(), ref pos, ref argc, args);
         }
 
+        public static T Format<T>(string fmt, params object[] args) where T : Object
+        {
+            return Format(fmt, args).Cast<T>();
+        }
+
         public T Cast<T>() where T: Erlang.Object
         {
             return (T)this;

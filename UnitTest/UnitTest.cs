@@ -5,7 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using Otp;
 using System.Collections.Concurrent;
-using KVP = System.Collections.Generic.KeyValuePair<int,Otp.Erlang.VarBind>;
+using KVP = System.Collections.Generic.KeyValuePair<Otp.Erlang.PatternMatcher.Pattern, Otp.Erlang.VarBind>;
 
 namespace Otp
 {
@@ -460,15 +460,13 @@ namespace Otp
         [Test]
         public void PatternMatchCollectionTest()
         {
-
-            var pm = new Erlang.PatternMatcher();
             var state = new KVP();
 
-            var IDs = new int[] {
-                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), stop}"),
-                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), status}"),
-                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), {status, B::atom()}}"),
-                pm.Add<int>(0, (id, b, _) => state = new KVP(id, b), "{A::integer(), {config, B::list()}}")
+            var pm = new Erlang.PatternMatcher {
+                { 0, (_ctx, p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), stop}"               },
+                {          (p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), status}"             },
+                { 0, (_ctx, p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), {status, B::atom()}}"},
+                {          (p, t, b, _args) => state = new KVP(p.ID, b), "{A::integer(), {config, B::list()}}"}
             };
 
             Assert.AreEqual(1,  pm.Match(Erlang.Object.Format("{10, stop}")));
@@ -486,8 +484,13 @@ namespace Otp
             Assert.AreEqual(0,  state.Value["B"].listValue().Length);
                                 
             Assert.AreEqual(-1, pm.Match(Erlang.Object.Format("{10, exit}")));
-        }
 
+            var pts = pm.PatternsToTerm.ToString();
+
+            Assert.AreEqual(
+                "[{A::int(),stop},{A::int(),status},{A::int(),{status,B::atom()}},{A::int(),{config,B::list()}}]",
+                pts);
+        }
 
     }
 }
