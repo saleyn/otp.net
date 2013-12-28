@@ -15,6 +15,8 @@
 *
 * Copyright (c) 2011 Serge Aleynikov <saleyn@gmail.com>
 */
+using System.Globalization;
+
 namespace Otp.Erlang
 {
     using System;
@@ -386,7 +388,7 @@ namespace Otp.Erlang
                         if (s.IndexOf('.') < 0)
                             result = new Erlang.Long(long.Parse(s));
                         else
-                            result = new Erlang.Double(double.Parse(s));
+                            result = new Erlang.Double(double.Parse(s, CultureInfo.InvariantCulture));
                     } else if (c == '"') {      /* string ? */
                         string s = pstring(fmt, ref pos);
                         result = new Erlang.String(s);
