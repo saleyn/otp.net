@@ -31,7 +31,7 @@ namespace Otp.Erlang
 	[Serializable]
     public class List:Erlang.Object, IEnumerable<Object>
 	{
-		private Object[] elems = null;
+		private Object[] elems;
 		
 		// todo: use a linked structure to make a proper list with append,
 		// car, cdr etc methods. The current representation is essensially the
@@ -45,7 +45,7 @@ namespace Otp.Erlang
 		**/
 		public List()
 		{
-			this.elems = null; // empty list
+			this.elems = new Object[0]; // empty list
 		}
 		
 		/*
@@ -102,27 +102,25 @@ namespace Otp.Erlang
         **/
         public List(params object[] elems)
         {
-            if ((elems != null) && (elems.Length > 0))
-            {
-                this.elems = new Object[elems.Length];
+            int length = (elems != null) ? elems.Length : 0;
+            this.elems = new Object[length];
 
-                for (int i=0; i < elems.Length; i++) 
-                {
-                    object o = elems[i];
-                    if (o is int) this.elems[i] = new Int((int)o);
-                    else if (o is string) this.elems[i] = new String((string)o);
-                    else if (o is float) this.elems[i] = new Double((float)o);
-                    else if (o is double) this.elems[i] = new Double((double)o);
-                    else if (o is Erlang.Object) this.elems[i] = (Erlang.Object)o;
-                    //else if (o is BigInteger) this.elems[i] = (BigInteger)o;
-                    else if (o is uint) this.elems[i] = new UInt((int)o);
-                    else if (o is short) this.elems[i] = new Short((short)o);
-                    else if (o is ushort) this.elems[i] = new UShort((short)o);
-                    else if (o is bool) this.elems[i] = new Boolean((bool)o);
-                    else if (o is char) this.elems[i] = new Char((char)o);
-                    else
-                        throw new System.ArgumentException("Unknown type of element[" + i + "]: " + o.GetType().ToString());
-                }
+            for (int i=0; i < length; i++)
+            {
+                object o = elems[i];
+                if (o is int) this.elems[i] = new Int((int)o);
+                else if (o is string) this.elems[i] = new String((string)o);
+                else if (o is float) this.elems[i] = new Double((float)o);
+                else if (o is double) this.elems[i] = new Double((double)o);
+                else if (o is Erlang.Object) this.elems[i] = (Erlang.Object)o;
+                //else if (o is BigInteger) this.elems[i] = (BigInteger)o;
+                else if (o is uint) this.elems[i] = new UInt((int)o);
+                else if (o is short) this.elems[i] = new Short((short)o);
+                else if (o is ushort) this.elems[i] = new UShort((short)o);
+                else if (o is bool) this.elems[i] = new Boolean((bool)o);
+                else if (o is char) this.elems[i] = new Char((char)o);
+                else
+                    throw new System.ArgumentException("Unknown type of element[" + i + "]: " + o.GetType().ToString());
             }
         }
 
@@ -137,14 +135,15 @@ namespace Otp.Erlang
         **/
 		public List(OtpInputStream buf)
 		{
-			this.elems = null;
-			
 			int arity = buf.read_list_head();
-			
+
+			if (arity < 0)
+				arity = 0;
+
+			this.elems = new Object[arity];
+
 			if (arity > 0)
 			{
-				this.elems = new Object[arity];
-				
 				 for (int i = 0; i < arity; i++)
 				{
 					elems[i] = buf.read_any();
@@ -166,7 +165,7 @@ namespace Otp.Erlang
 		**/
 		public int arity()
 		{
-			return (elems == null) ? 0 : elems.Length;
+			return elems.Length;
 		}
 		
 		/*
