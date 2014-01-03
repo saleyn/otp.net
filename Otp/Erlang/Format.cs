@@ -386,7 +386,7 @@ namespace Otp.Erlang
                     } else if (char.IsDigit(c) || c == '-') {    /* integer/float ? */
                         string s = pdigit(fmt, ref pos);
                         if (s.IndexOf('.') < 0)
-                            result = new Erlang.Long(long.Parse(s));
+                            result = new Erlang.Long(long.Parse(s, CultureInfo.InvariantCulture));
                         else
                             result = new Erlang.Double(double.Parse(s, CultureInfo.InvariantCulture));
                     } else if (c == '"') {      /* string ? */
