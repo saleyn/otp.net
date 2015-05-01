@@ -13,6 +13,6 @@ For sample use of OTP.NET see `OtpTest1/Test1.cs`.
 ## NOTE ##
 
 This project is being phased out into an updated and more powerful implementation
-of Erlang interface for .NET called NFX.Erlang.  NFX is a library that will be
-open sourced in Jan 2014. Pre-release documentation is available
+of Erlang interface for .NET called NFX.Erlang. The project is located at
+https://github.com/aumcode/nfx. Pre-release documentation is available
 [here](http://itadapter.com/nfxhelp/) (under NFX.Erlang section).
