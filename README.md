@@ -20,3 +20,15 @@ https://github.com/aumcode/nfx. Pre-release documentation is available
 See the features of the new library described here:
 * [Overview blog](http://blog.aumcode.com/2013/10/nfx-native-interoperability-of-net-with.html)
 * [Interop with Erlang/Mnedia and RPC abstraction](https://www.youtube.com/watch?v=o9utCAMLydA)
+
+## What is implemented in NFX.Erlang? ##
+* Support of all Erlang types and their mapping to corresponding CLR types
+* Pattern matching of Erlang types
+* String parsing (e.g. `"{10, 'abc', A::int(), [B::atom(), C::list()], \"hello\"}."`) into the corresponing Erlang type
+* Erlang term serialization/deserialization
+* Full support of OTP distributed protocol
+* Initiation of Erlang.NET node starting via configurable dependency injection or through code
+* Distributed mailbox monitoring and linking
+ 
+## What is not implemented yet in NFX.Erlang? ##
+* Support for Erlang maps introduced in R18.
