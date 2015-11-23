@@ -16,3 +16,7 @@ This project is being phased out into an updated and more powerful implementatio
 of Erlang interface for .NET called NFX.Erlang. The project is located at
 https://github.com/aumcode/nfx. Pre-release documentation is available
 [here](http://itadapter.com/nfxhelp/) (under NFX.Erlang section).
+
+See the features of the new library described here:
+* [Overview blog](http://blog.aumcode.com/2013/10/nfx-native-interoperability-of-net-with.html)
+* [Interop with Erlang/Mnedia and RPC abstraction](https://www.youtube.com/watch?v=o9utCAMLydA)
