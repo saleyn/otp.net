@@ -24,11 +24,15 @@ See the features of the new library described here:
 ## What is implemented in NFX.Erlang? ##
 * Support of all Erlang types and their mapping to corresponding CLR types
 * Pattern matching of Erlang types
-* String parsing (e.g. `"{10, 'abc', A::int(), [B::atom(), C::list()], \"hello\"}."`) into the corresponing Erlang type
+* String parsing (e.g. `"{10, 'abc', A::int(), [B::atom(), C::list()], \"hello\"}."`) into the
+  corresponing Erlang type
 * Erlang term serialization/deserialization
 * Full support of OTP distributed protocol
 * Initiation of Erlang.NET node starting via configurable dependency injection or through code
 * Distributed mailbox monitoring and linking
+* RPC calls from Erlang to .NET and from .NET to Erlang
+* I/O server in .NET so that output of an RPC call from .NET to `io:put_chars("hello\n")` can
+  be relayed back to .NET and handled there
  
 ## What is not implemented yet in NFX.Erlang? ##
 * Support for Erlang maps introduced in R18.
