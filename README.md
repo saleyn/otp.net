@@ -19,7 +19,7 @@ https://github.com/aumcode/nfx. Pre-release documentation is available
 
 See the features of the new library described here:
 * [Overview blog](http://blog.aumcode.com/2013/10/nfx-native-interoperability-of-net-with.html)
-* [Interop with Erlang/Mnedia and RPC abstraction](https://www.youtube.com/watch?v=o9utCAMLydA)
+* [Interop with Erlang/Mnesia and RPC abstraction](https://www.youtube.com/watch?v=o9utCAMLydA)
 
 ## What is implemented in NFX.Erlang? ##
 * Support of all Erlang types and their mapping to corresponding CLR types
